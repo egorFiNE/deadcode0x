@@ -107,4 +107,5 @@ s3
 
 web/???/*
 web/index.html
-invalidate.sh
+invalidate.*
+trim.*
