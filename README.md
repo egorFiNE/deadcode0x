@@ -1,2 +1,3 @@
-# deadcode0x
-исходники веба deadcode.dev
+# Дратути
+
+Исходники веба https://deadcode.dev/ и телеграм-канала @deadcode0x
