@@ -1,0 +1,1181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <image>
+      <url>https://deadcode.dev/rss2.png</url>
+      <title>Деды писали код</title>
+      <link>https://deadcode.dev/</link>
+    </image>
+    <atom:link href="https://deadcode.dev/rss2.xml" rel="self" type="application/rss+xml"/>
+    <title>Деды писали код</title>
+    <description>Telegram канал с ежедневным советом по программированию</description>
+    <link>https://deadcode.dev/</link>
+    <language>ru</language>
+    <copyright>2020 Егор Егоров | me@egorfine.com</copyright>
+    <pubDate>Wed, 20 May 2020 11:27:20 GMT</pubDate>
+    <item>
+      <title>Возврат неуспешного результата из функции в JS</title>
+      <link>https://deadcode.dev/302/</link>
+      <guid isPermaLink="true">https://deadcode.dev/302/</guid>
+      <pubDate>Wed, 20 May 2020 11:27:20 GMT</pubDate>
+      <description><![CDATA[<pre class="code-padding"><code class="hljs code-padding language-c"><span class="hljs-keyword">if</span> (stat(filename) == <span class="hljs-number">-1</span>) {
+  <span class="hljs-comment">// file doesn't exist</span>
+}</code></pre>
+<p>Такой код прижился только в C, и только там он является общепринятым и понятным.</p>
+<p>В скриптовых языках программирования не следует возвращать -1 как признак (не)успешного выполнения функции, а в JS осторожно нужно быть и со всякими null/undefined. Вообще, канонически правильного способа вернуть ошибку толком-то и нет; сишный <code>errno</code> — это страшный костыль, за который потомки до сих пор благодарны нам. Сишный же способ передать указатель на переменную тоже не самое элегантное решение, и имеет право на жизнь только там, где все программисты этот паттерн знают и хорошо к нему привыкли.</p>
+<p>В случае JavaScript нужно просто пройти все <a href="https://ru.wikipedia.org/wiki/%D0%9A%D1%8E%D0%B1%D0%BB%D0%B5%D1%80-%D0%A0%D0%BE%D1%81%D1%81,_%D0%AD%D0%BB%D0%B8%D0%B7%D0%B0%D0%B1%D0%B5%D1%82#%D0%9F%D1%8F%D1%82%D1%8C_%D1%81%D1%82%D0%B0%D0%B4%D0%B8%D0%B9_%D0%BF%D1%80%D0%B8%D0%BD%D1%8F%D1%82%D0%B8%D1%8F_%D1%81%D0%BC%D0%B5%D1%80%D1%82%D0%B8">пять стадий принятия</a> и договориться с собой, что ты возвращаешь из функции структуру вида</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">return</span> {
+  <span class="hljs-attr">success</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">user</span>: {
+    <span class="hljs-attr">id</span>: ...
+  }
+}</code></pre>
+<p>Ключевые понятия:</p>
+<ul>
+<li>постарайся унифицировать методы; либо везде возвращать success-структуру либо везде проверять <code>if (!result)</code>;</li>
+<li>категорически избавься от проверки типа возвращаемого значения как признака. Никаких <code>const count = returnCount()</code> и затем <code>if (count === null) { /* нету */ }</code>;</li>
+<li>если метод возвращает success-структуру, то в результате всегда присутствует ключ <code>success</code>. Не нужно его опускать, полагаясь на то, что в этом случае <code>result.success == false</code>;</li>
+<li>если метод возвращает success-структуру, то он не имеет права вернуть null;</li>
+<li>если ты используешь сишный паттерн, передавая в функцию хеш, который затем функция меняет внутри, то четко укажи это в названии функции: <code>parseUserAndAugmentWithIds(user = {})</code>;</li>
+</ul>
+<p>Еще можно делать так:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DeleteFile</span> </span>{
+  <span class="hljs-keyword">static</span> perform(path) {
+    <span class="hljs-comment">// ...</span>
+    <span class="hljs-keyword">return</span> DeleteFile.SUCCESS;
+  }
+}
+
+DeleteFile.SUCCESS = <span class="hljs-string">'success'</span>;
+DeleteFile.NOT_FOUND = <span class="hljs-string">'notFound'</span>;
+
+<span class="hljs-comment">// ...</span>
+
+<span class="hljs-keyword">if</span> (DeleteFile.perform(filename) != DeleteFile.SUCCESS) {
+  <span class="hljs-comment">// бля</span>
+}</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Код не для исполнения</title>
+      <link>https://deadcode.dev/296/</link>
+      <guid isPermaLink="true">https://deadcode.dev/296/</guid>
+      <pubDate>Wed, 13 May 2020 08:06:06 GMT</pubDate>
+      <description><![CDATA[<p>Иногда можно писать код, который никогда не будет исполняться, но который очень важно чтобы никто другой не написал.</p>
+<p>Например, у меня есть разветвистый <code>if .. else if .. else if ..</code>. В конце каждой ветки стоит почти одинаковый вызов. И вот в одной из веток его нет, а логика очень похожа. И чтобы мой коллега как-нибудь не заметил эту <em>очевидную</em> проблему и не скопировал туда строчку — это сделал я сам:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">this</span>.$notify.success(<span class="hljs-string">'Advanced Trial started'</span>);
+
+<span class="hljs-comment">// this.$bus.$emit('UPDATE_ROOT_USER'); // &lt;-- код не для компьютера!</span>
+
+<span class="hljs-comment">// Normally we would update root user and the interface will re-render.</span>
+<span class="hljs-comment">// But we want to kick in all handlers on first login after plan purchase</span>
+<span class="hljs-comment">// and it is way easier to do that with a boring reload instead of update.</span>
+
+<span class="hljs-keyword">set</span><span class="hljs-title">Timeout</span>(<span class="hljs-params">(</span>) =&gt; <span class="hljs-title">document</span>.<span class="hljs-title">location</span>.<span class="hljs-title">reload</span>(), 1000);</code></pre>
+<p>Если бы я не написал этой строчки <code>this.$bus.$emit()</code>, то рано или поздно она была бы кем-то сюда внесена, потому что везде же она есть.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Есть два крона</title>
+      <link>https://deadcode.dev/295/</link>
+      <guid isPermaLink="true">https://deadcode.dev/295/</guid>
+      <pubDate>Thu, 07 May 2020 07:05:03 GMT</pubDate>
+      <description><![CDATA[<p>Простой кейс: твой сервис <a href="https://deadcode.dev/293/">работает на двух или трех серверах</a> и у тебя есть задача, которую нужно по cron&#39;у выполнять каждую минуту, например, разбирать очередь задач. Или чистить внешний сторадж. Как разделить таски так, чтобы сервера между собой не дрались?</p>
+<p>Есть очень простой хак.</p>
+<p>В одном кроне запускаешь свою задачу с ключем <code>--odd</code>, в другом с ключом <code>--even</code>. В самом же коде проверяешь номер задачи (или что угодно). Если он четный и тебе сказали <code>--even</code> — выполняешь, иначе — пропускаешь. И наоборот, скрипт с ключом <code>--odd</code> выполняет только нечетные задачи. Еще так можно по-быстрому распределить большие работы между серверами в одноразовых скриптах.</p>
+<p>Easy!</p>
+<p>PS: Мнемоническое правило, как запомнить что even — это четное, а odd — нечетное: в слове even — четное количество букв.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Есть два сервера</title>
+      <link>https://deadcode.dev/293/</link>
+      <guid isPermaLink="true">https://deadcode.dev/293/</guid>
+      <pubDate>Tue, 05 May 2020 07:28:13 GMT</pubDate>
+      <description><![CDATA[<p>Практически любая задача должна выполняться минимум двумя серверами. Если один умрет - второй подхватит. Веб, кроны, база, memcached — всего этого должно быть по два или больше.</p>
+<p>Разумеется, это предельно очевидно, даже непонятно, зачем такие советы писать.</p>
+<p>Тем не менее, я регулярно вижу, как ребята поднимают memcached на одном сервере; затем, когда они его апгрейдят - у них каскадно падает вся инфраструктура. Причем каскадно и причем вся.</p>
+<p>Поэтому: вместо одной виртуалки за $30 лучше подними две по $15.</p>
+<p><code>%АНЕКДОТ_ПРО_ДВУХ_ЖЕН_ПО_20_ЛЕТ%</code></p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>/health/ check</title>
+      <link>https://deadcode.dev/290/</link>
+      <guid isPermaLink="true">https://deadcode.dev/290/</guid>
+      <pubDate>Mon, 04 May 2020 07:02:02 GMT</pubDate>
+      <description><![CDATA[<p>Полезно пользоваться сервисами, которые мониторят аптайм твоего продукта и шлют уведомляшки в случае аварии. Но уверен ли ты, что  правильно с ними разговариваешь?</p>
+<p>А правильно вот так. Мониторилка должна приходить на URL, специально подготовленный для нее (<code>/health/</code>). Там ты проверяешь:</p>
+<ul>
+<li>в порядке ли коннект к базе (<code>SELECT 1</code>)</li>
+<li>в порядке ли memcached/redis/etc (<code>.set(&#39;lopata&#39;, &#39;a&#39;)</code>, затем <code>.get(&#39;lopata&#39;)==&#39;a&#39;</code>)</li>
+<li>в порядке ли погода (<code>loadavg</code>, достаточно ли свободной памяти и т.п.)</li>
+<li>и т.д.</li>
+</ul>
+<p>Проверки выполняешь последовательно, и в случае ошибки выдаешь ее в теле со статусом HTTP 500. Так в случае аварии ты сразу узнаешь, кто сломался (конечно, если твой сервис само тело ответа показывает).</p>
+<p><strong>Важно:</strong> пользуйся существующими коннектами к базам. Что толку с того, что твой health check покажет, что к базе можно успешно открыть новое соединение, когда у тебя рабочие соединения мертвые и веб не работает?</p>
+<p>И только если все хорошо, тогда говори HTTP 200. <a href="https://deadcode.dev/151/">И не забудь отправить Content-Length</a> (нулевой).</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Как принимать платежные уведомления </title>
+      <link>https://deadcode.dev/281/</link>
+      <guid isPermaLink="true">https://deadcode.dev/281/</guid>
+      <pubDate>Thu, 23 Apr 2020 10:35:23 GMT</pubDate>
+      <description><![CDATA[<p>Почти все платежные системы устроены одинаково. Ты отправляешь своего пользователя на страницу платежки, там происходит магия, затем она редиректит пользователя на спасибо-страничку, а сама тихонечко постит тебе подтверждение платежа (IPN) на твой URL. </p>
+<p>Давай поговорим о том, как правильно принимать эти IPN.</p>
+<p>Это должен быть отдельный http сервер (или отдельный .php), со своим конфигом, <strong>не использующий общий код проекта.</strong> Все, что должен делать этот скрипт — записать сырые данные платежного уведомления в базу и сказать HTTP 200 OK. <strong>И все,</strong> и ни в коем случае ничего больше! </p>
+<p>Структура таблички должна быть примерно такой: </p>
+<pre class="code-padding"><code class="hljs code-padding language-sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> IPN (
+    <span class="hljs-keyword">data</span> <span class="hljs-built_in">TEXT</span>,
+    isProcessed <span class="hljs-built_in">TINYINT</span>(<span class="hljs-number">1</span>) <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>
+);</code></pre>
+<p>(<code>createdAt</code> и <code>NOT NULL</code> добавь по вкусу)</p>
+<p>Цель простая: как можно атомарнее и проще <strong>принять</strong> уведомление, надежно его записать и подтвердить платежке. Вокруг платежа может быть очень много разной логики, и она может ломаться в самых разных местах. Не надо так! Прими уведомление, потом разбирайся. </p>
+<p>Не надо пытаться парсить эти данные. Ты можешь сломаться в миллионе мест. Более того, очень часто тебе нужно будет повторно парсить эти уведомления, а иной раз и задним числом.</p>
+<p>Нельзя использовать ни строчки общего кода. Даже конфиг. Там может быть ошибка, и у тебя сломается прием платежей. Больно.</p>
+<p>Исключительно отдельный код на полстранички без зависимостей! Так тебе не придется его рестартить почти никогда. </p>
+<p>А вот парсер у тебя пусть работает отдельно, регулярно забирает новые уведомляшки <a href="https://deadcode.dev/257/">с помощью SELECT FOR UPDATE</a> и вот он уже является частью твоего кода. </p>
+<p>Сломался? Ничего страшного. Ведь <code>isProcessed</code> он поставит <code>=1</code> только в самом конце, после успешного завершения всей бизнес-логики. </p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Атомарная выборка только одной записи</title>
+      <link>https://deadcode.dev/257/</link>
+      <guid isPermaLink="true">https://deadcode.dev/257/</guid>
+      <pubDate>Tue, 21 Apr 2020 10:40:37 GMT</pubDate>
+      <description><![CDATA[<p>Представь простую очередь задач в SQL. У каждой есть уникальный ID, поле статуса (новая, в работе, закончена) и данные. Представь себе, что очередь у тебя разбирают несколько серверов.</p>
+<p>Как сделать так, чтобы одну задачу забирал только один сервер?</p>
+<p>На помощь приходит <code>SELECT ... FOR UPDATE</code>:</p>
+<pre class="code-padding"><code class="hljs code-padding language-sql"><span class="hljs-keyword">BEGIN</span>;
+<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> Queue 
+  <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">'new'</span> 
+  <span class="hljs-keyword">LIMIT</span> <span class="hljs-number">1</span> 
+  <span class="hljs-keyword">FOR</span> <span class="hljs-keyword">UPDATE</span>;
+<span class="hljs-keyword">UPDATE</span> Queue 
+  <span class="hljs-keyword">SET</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">'in progress'</span> 
+  <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span> = xxx;
+<span class="hljs-keyword">COMMIT</span>;</code></pre>
+<p>Как только SQL сервер получает запрос на выборку <code>FOR UPDATE</code>, он никому другому больше не отдаст эту запись, пока ты не закроешь транзакцию.</p>
+<p>Кстати, организовывать очередь на SQL нужно аккуратно. Природа ее нагрузки такова, что очередь — небольшая, а SQL — уже задыхается. Не для очередей его взращивали. </p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Как написать отдельную документацию</title>
+      <link>https://deadcode.dev/252/</link>
+      <guid isPermaLink="true">https://deadcode.dev/252/</guid>
+      <pubDate>Mon, 06 Apr 2020 12:30:34 GMT</pubDate>
+      <description><![CDATA[<p>Самая тяжелая задача для программиста — написать отдельную документацию. Отдельную, то есть не комментарии и не документацию на методы. Например, мануал по инсталляции или — самое страшное — описание архитектуры.</p>
+<p>Подсказываю чит, как легко и просто написать документацию.</p>
+<p><strong>Шаг 1: выпиши</strong> тезисы. Понятные только тебе. В любом порядке, как угодно, просто выгрузи все единицы знания из головы.</p>
+<pre>
+нужен докер
+но можно ставить и на хост
+image называется golubinaya
+ProductImage это на самом деле скрипт
+нода не меньше 13.x
+нужен компилятор для сборки
+обязательно тестируй через test/
+ImageMagick используем через exec
+только убунта, остальные пофиг
+</pre>
+
+<p><strong>Шаг 2: отсортируй</strong> по важности или по логике.</p>
+<pre>
+только убунта, остальные пофиг
+нужен докер
+image называется golubinaya
+но можно ставить и на хост
+нода не меньше 13.x
+нужен компилятор для сборки
+ImageMagick используем через exec
+ProductImage это на самом деле скрипт
+обязательно тестируй через test/
+</pre>
+
+<p><strong>Шаг 3: замени</strong> каждый тезис на текст.</p>
+<blockquote>
+<p>Only the stock Ubuntu 18.04 has been tested and is officially supported. Although there are no reasons why it won&#39;t run on other Linux flavours we just didn&#39;t check it so YMMV.</p>
+<p>Please note that ProductImage is not a real executable but rather a shell script. So we don&#39;t run binary code in production.</p>
+<p>Make sure your installation is indeed correct by running the test suite in test/ folder.</p>
+</blockquote>
+<p>Ты понял секрет? <em>Каждый</em> шаг легко выполним, и в нем нет ничего сложного. Нечего бояться. Все просто.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Тяжелый способ вносить большие изменения</title>
+      <link>https://deadcode.dev/249/</link>
+      <guid isPermaLink="true">https://deadcode.dev/249/</guid>
+      <pubDate>Fri, 20 Mar 2020 10:09:12 GMT</pubDate>
+      <description><![CDATA[<p>У тебя есть четыре базы пользователей и три метода входа/регистрации. Гора логики! Теперь нужно добавить еще один тип пользователя и убрать одну из старых баз.</p>
+<p>Традиционный подход: делаем git&nbsp;branch, работаем, устаем, тестируем, затем merge &amp; pray.</p>
+<p>Окей. Но что если нужно вносить изменения постепенно, и какое-то время поддерживать старые варианты на период миграции? Или другой кейс: если участок кода настолько критичный, что его должны внимательно просмотреть несколько человек?</p>
+<p>Есть другой подход. Вместо merge и безжалостного кромсания я пишу новый код на месте, оборачивая его в <code>if</code>. Во-первых, можно оборачивать в <code>if (0)</code> или <code>if (isNew)</code> — так код будет компилироваться и валидироваться, но не выполняться (<a href="https://deadcode.dev/118/">я когда-то писал об этом</a>). Сломается продакшн — можно очень быстро понять что сломалось и очень быстро откатить. Легко проверять тестами. Мелкие изменения  существенно безопаснее, чем один большой апдейт.</p>
+<p>Во-вторых, при таком подходе получается более понятный diff. Причем не только по каждому конкретному коммиту, но diff между нетронутым и новым кодом: сразу в одном экране будет и старая и новая ветки кода. Удобно для review.</p>
+<p>Какой подход правильный для какого случая? Тебе решать.</p>
+<p>PS: Запомни: <code>git diff --ignore-space-at-eol --break-rewrites --ignore-all-space --ignore-blank-lines</code></p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Карантин для данных вместо удаления</title>
+      <link>https://deadcode.dev/247/</link>
+      <guid isPermaLink="true">https://deadcode.dev/247/</guid>
+      <pubDate>Mon, 16 Mar 2020 13:28:06 GMT</pubDate>
+      <description><![CDATA[<p>Дело в том, что удаление данных — относительно дорогая процедура для большинства систем хранения данных. Представь себе, что должно произойти, чтобы <strong>удалить</strong> запись 130 из 100,000: нужно перезаписать все следующие за ней 99,870 записей. Это дорого. Поэтому базы не удаляют данные, пока их об этом не попросят.</p>
+<p>И ты не удаляй, а положи в карантин. Заведи для записи флажок <code>isDeleted</code>, а еще лучше дату <code>deletedAt</code>, и в случае &quot;удаления&quot; — выставляй ее. В коде тебе нужно будет везде делать выборки с учетом этого поля.</p>
+<p>Практически всегда так дешевле, чем реально что-то удалять.</p>
+<p>Раз в какое-то время нужно вычищать удаленные записи. Для этого создавай новую табличку, куда переноси все актуальные данные, а затем просто удали старую и переименуй новую.</p>
+<p>Разумеется, это касается не всех систем хранения. Но даже на локальной файловой системе может оказаться что дешевле не удалять файлики, а раз в какое-то время удалять всю fs. В случае ext3/ext4 это точно так, увы.</p>
+<p>Кроме того, подход &quot;recycle bin&quot; еще и важен с точки зрения бизнес-логики: нередко бывают ситуации, когда нужно либо восстанавливать удаленные данные, либо сверяться с ними. Частный случай: удаляем пользовательский емейл, но еще месяц проверяем по нему уникальность.</p>
+<p>Отдельную сложность представляет GDPR, т.к. по запросу данные нужно точно удалить, но в таком случае в определенных форматах я перезаписываю приватные данные нулями.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Самый удобный файловый формат</title>
+      <link>https://deadcode.dev/244/</link>
+      <guid isPermaLink="true">https://deadcode.dev/244/</guid>
+      <pubDate>Thu, 12 Mar 2020 13:00:05 GMT</pubDate>
+      <description><![CDATA[<p>Это текстовый файл, где одна строка — одна запись в JSON (без перевода строк).</p>
+<p>В начале такого файла выдели пару килобайт, заполни их нулями. Здесь у тебя будет жить заголовок, тоже в виде JSON-строки. Здесь можно хранить, например, количество записей, контрольные суммы, даты и так далее.</p>
+<p>Почему обязательно пару килобайт? Потому что так ты сможешь перезаписывать заголовок, не перезаписывая весь файл целиком. Если бы ты просто назначил заголовком первую строку, то тебе при ее изменении пришлось бы перезаписывать все. А так у тебя есть паддинг.</p>
+<p>Почему нулями? Потому что ты можешь сказать <code>cat file</code> и он выведет байты только до первого нуля — очень удобно просматривать.</p>
+<p>С перезаписываемым заголовком удобно создавать <a href="https://deadcode.dev/209/">простейший журнал</a>.</p>
+<p>Из полезных идей: в заголовке фиксированного размера можно хранить индексы.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> recordsByUserId = {};
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i=<span class="hljs-number">0</span>; i&lt;records.length; i++) {
+  recordsByUserId[record.userId] = i;
+}</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Быстрая загрузка данных в базу</title>
+      <link>https://deadcode.dev/235/</link>
+      <guid isPermaLink="true">https://deadcode.dev/235/</guid>
+      <pubDate>Mon, 09 Mar 2020 10:38:40 GMT</pubDate>
+      <description><![CDATA[<p>Не бойся тупорылых решений там, где они абсолютно уместны. Иной раз самый практичный способ загрузить кучу данных в базу — это создать текстовый файл с SQL-запросами и скормить его на вход в <code>/usr/bin/mysql</code> или <code>psql</code> или что там у тебя сегодня. (Не забудь выключить ключи и обернуть в транзакцию)</p>
+<p>Или не SQL, а CSV, если твоя база умеет читать его напрямую.</p>
+<p>Более того, для некоторых баз данных этот способ еще и драматически быстрее остальных. Например, в случае SQLite <a href="https://www.sqlite.org/cli.html#csv_import">загрузка данных из табличного текстового файла</a> происходит во много раз быстрее, чем с помощью SQL.</p>
+<p><em>А нужна ли тебе эта оптимизация? Как-нибудь обсудим.</em></p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Соблюдай единый стиль в мелочах</title>
+      <link>https://deadcode.dev/231/</link>
+      <guid isPermaLink="true">https://deadcode.dev/231/</guid>
+      <pubDate>Fri, 06 Mar 2020 08:46:56 GMT</pubDate>
+      <description><![CDATA[<p>Пример из реального проекта:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript">res.set({
+    <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'text/plain'</span>,
+    <span class="hljs-string">'Cache-Control'</span>: <span class="hljs-string">'public'</span>,
+    <span class="hljs-string">"Content-Length"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">Location</span>: <span class="hljs-string">'/'</span>
+});</code></pre>
+<p>Обрати внимание на три разных способа обратиться к ключу хеша: через одинарные кавычки, через двойные кавычки и без кавычек вообще. Это ужасно некрасиво, не надо так. В случае HTTP-заголовков их все стоит писать в одинарных кавычках, потому что минус не может быть частью литерала в JavaScript.</p>
+<p>Адвокат: &quot;Но он же <a href="https://deadcode.dev/151/">передает Content-Length</a>!&quot; <br>
+Суд: &quot;Оправдан!&quot;</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Moving Average в реальной жизни</title>
+      <link>https://deadcode.dev/228/</link>
+      <guid isPermaLink="true">https://deadcode.dev/228/</guid>
+      <pubDate>Thu, 05 Mar 2020 09:52:45 GMT</pubDate>
+      <description><![CDATA[<p>Представим себе сервис, в котором ты мониторишь количество активных пользователей. Точное значение на конкретный день обычно не имеет смысла. Сильно важнее наблюдать тренды. Например, краткосрочные: мы выкатили апдейт, как выглядит кривая пользователей за неделю? Или среднесрочные: мы уже два месяца предоставляем скидки, как это повлияло на подписки?</p>
+<p>Для таких трендов мы используем MA. Каждый день мы вычисляем сколько было в среднем активных пользователей за последние X дней и это число рисуем на графике. И так — на каждый день. И на одном графике важно наложить как минимум две линии: краткосрочную и долгосрочную. Самые интересные вещи происходят на пересечении кратко и долгосрочных трендов.</p>
+<p>MA имеет смысл использовать практически для всех графиков и метрик, где ты привык использовать абсолютные числа. Нагрузка на сервис, количество писем в суппорт, денег, подписок, отказов — практически все это имеет смысл рассматривать не в виде абсолютных чисел, а в виде MA.</p>
+<p><img class="img-fluid" src="https://deadcode.dev/228/228.png" alt="Средние значения"></p>
+<p>На картинке: пример такого графика по количеству отказных пользователей в живой системе. Мы что-то сделали правильно :)</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Moving Average для чайников</title>
+      <link>https://deadcode.dev/225/</link>
+      <guid isPermaLink="true">https://deadcode.dev/225/</guid>
+      <pubDate>Mon, 02 Mar 2020 10:35:03 GMT</pubDate>
+      <description><![CDATA[<p>Стоит чаще пользоваться скользящими средними значениями (по-русски Moving Average) вместо точных цифр.</p>
+<p>Например, не имеет смысла рисовать на графике точное количество пользователей сайта на каждый день. Полезнее нарисовать график <em>среднего количества за последние семь дней</em>. То есть на каждый день в графике мы рисуем сколько в среднем было за неделю. Так мы видим более сглаженную картинку и тренды.</p>
+<p>И вот часто так бывает, что считать настоящее среднее значение - дорого. Ну окей, для графика пользователей легко, а вот попробуй вычислить среднее значение цены акции. На двести бумаг. На трех биржах. На каждый тик.</p>
+<p>И тут на помощь приходят методы аппроксимации среднего значения, дешевые по процессору и по памяти. Два метода, которые мне нравятся больше всего:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// метод 1</span>
+<span class="hljs-keyword">const</span> ALPHA = <span class="hljs-number">0.4</span>;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calcExponentialMA</span>(<span class="hljs-params">accumulator, value</span>) </span>{
+  <span class="hljs-keyword">return</span> accumulator + ALPHA * (value - accumulator);
+}
+
+<span class="hljs-comment">// метод 2</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">calcApproximateRollingAvg</span>(<span class="hljs-params">accumulator, value, count</span>) </span>{
+  accumulator -= accumulator / count;
+  accumulator += value / count;
+
+  <span class="hljs-keyword">return</span> accumulator;
+}</code></pre>
+<p>Вот как выглядит среднесуточная цена акции Apple <em>за 10 дней</em> в этих двух алгоритмах:</p>
+<p><img class="img-fluid" src="https://deadcode.dev/225/225.png" alt="Средние значения"></p>
+<p>(&quot;TRUE&quot; — настоящее среднее, посчитанное втупую).</p>
+<p>Самое неприятное в первом методе: правильно подобрать ALPHA. И еще: этот метод вычисляет среднее за все время, но чем старше значение, тем меньше оно влияет на результат. Немного тяжко для осмысления в конкретных числах.</p>
+<p>Самое неприятное во втором методе: быстро накапливается ошибка округления. Проверь перед использованием.</p>
+<p>Самое неприятное вообще: акции падают. :-(</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Меньше комментариев!</title>
+      <link>https://deadcode.dev/222/</link>
+      <guid isPermaLink="true">https://deadcode.dev/222/</guid>
+      <pubDate>Fri, 28 Feb 2020 07:40:24 GMT</pubDate>
+      <description><![CDATA[<p>В <a href="https://deadcode.dev/221/">прошлом совете</a> я просил тебя записывать мысли в комментариях, чтобы сохранить знания и поддержать будущих коллег.</p>
+<p>Сегодня хочу предостеречь от другой крайности.</p>
+<p>Следи за собой. Не надо так.</p>
+<pre class="code-padding"><code class="hljs code-padding language-c"><span class="hljs-comment">// if db connected</span>
+<span class="hljs-keyword">if</span> (db) {
+  ...</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Больше комментариев!</title>
+      <link>https://deadcode.dev/221/</link>
+      <guid isPermaLink="true">https://deadcode.dev/221/</guid>
+      <pubDate>Thu, 27 Feb 2020 09:38:40 GMT</pubDate>
+      <description><![CDATA[<p>Пиши в комментариях идеи, которые привели к появлению этого алгоритма. Код останется на долгие годы, а причины выбора именно такого алгоритма — забудутся через месяц, а ты потом ломай голову.</p>
+<p>В процессе программирования ты создаешь <em>знания,</em> и большая часть знаний скрыта в коде, <em>который никогда не был написан.</em> На каждый успешно созданный метод приходится в десять раз больше идей и попыток написать другой, пусть даже мысленно. Код — это запись о решении &quot;да&quot;. А где знания о решениях &quot;нет&quot;, которых намного больше?</p>
+<p>Эти знания очень ценны, сохрани их. Просто напиши прямо здесь и сейчас, как есть. Как можно проще и быстрее, неважно в какой строке и в каком формате. Самое главное — выгрузи знания, а уже переписывать будешь потом, если вообще захочешь.</p>
+<p>Не бывает слишком много комментариев в коде.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// no need to sign pdf url</span>
+<span class="hljs-comment">// as we don't let users download it</span>
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">signUrls</span>(<span class="hljs-params">{ s3, expirationSeconds = <span class="hljs-number">3600</span>, fileHelper }</span>) </span>{ }</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Test-driven development в реальной жизни</title>
+      <link>https://deadcode.dev/217/</link>
+      <guid isPermaLink="true">https://deadcode.dev/217/</guid>
+      <pubDate>Tue, 25 Feb 2020 09:57:56 GMT</pubDate>
+      <description><![CDATA[<p>Есть такой подход к разработке: сначала пишется юнит-тест на несуществующий код, затем тест падает, затем исправляется «ошибка» — пишется непосредственно сам тестируемый класс. Это называется <a href="https://en.wikipedia.org/wiki/Test-driven_development">TDD</a>.</p>
+<p>Считается, что это прекрасный метод разработки, так как позволяет тебе попробовать использовать некий код еще до того, как ты его напишешь. Мол, только в реальном использовании станет понятно, какой на самом деле должен быть класс. Так давайте же сначала попробуем попользоваться и только потом сделаем, когда увидим потребности.</p>
+<p>Так и есть.</p>
+<p>Главная проблема: требуется много возни, чтобы получился реально рабочий тест на несуществующий код. Создать файл, разместить его, подключить тестовый фреймворк, и т.д. Это — ментальная преграда.</p>
+<p>Чит: <code>vi ~/tttt.js</code>. Воспользуйся идеей TDD без самого TDD. Ты можешь попробовать использовать будущий код без тестовой обвязки и даже <em>ни разу не запуская</em> этот скрипт. Секрет состоит в том, что тебе от TDD нужен не реальный <code>make test</code>, а нужно настроить мышление. Если ты попробуешь просто в блокноте пописать немножко прототипного кода, ты получишь 90% эффекта TDD. У тебя уже мозг настроится и уже через 10 мин такого эксперимента ты увидишь, что здесь работает, а что нет.</p>
+<p>Иными словами, TDD — не в файлах, TDD — в голове.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Простейший журнал</title>
+      <link>https://deadcode.dev/209/</link>
+      <guid isPermaLink="true">https://deadcode.dev/209/</guid>
+      <pubDate>Mon, 24 Feb 2020 09:59:10 GMT</pubDate>
+      <description><![CDATA[<p>Допустим, у тебя есть формат хранения и ты хочешь сделать так, чтобы данные в файле всегда были целостными. Тебе нужно журналирование.</p>
+<p>Простейший журнал делается так. В начале файла выдели 8 байт, заполни их нулями. Там будет жить указатель на самые актуальные данные. При добавлении чего-либо в файл просто допиши данные в конец, а затем сохрани в начале файла смещение на эти данные, с какого байта они начинаются. Секрет прост: процесс записи в файл может оборваться в любую секунду, в том числе и прямо посередине. Но мы можем рассчитывать на то, что 64-битный указатель либо <em>весь запишется,</em> либо <em>весь не запишется.</em> Соответственно, этот указатель <em>всегда</em> будет показывать на целую корректную запись. Чтение по такому же принципу: сначала прочитай указатель, затем данные по смещению.</p>
+<p>Этот принцип масштабируется и вглубь и вширь. Можно реализовать его и в JSON-формате. Можно реализовать его на уровне записи. Можно реализовать его линками на уровне файловой системы.</p>
+<p>Тут важно понять саму концепцию, а не думать байтами и файлами. Например, я в одном проекте на Amazon S3 переставлял линк на самый свежий файл после загрузки — это тоже журнал.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Простой интеграционный тест</title>
+      <link>https://deadcode.dev/208/</link>
+      <guid isPermaLink="true">https://deadcode.dev/208/</guid>
+      <pubDate>Fri, 21 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Самый простой приемочный (acceptance) тест на сложные системы — это простучать систему по самому основному пути, самому очевидному.</p>
+<p>Например, в моем главном проекте сейчас интеграционным тестом покрыт только вход, смена пароля, логаут и снова вход и смена пароля.</p>
+<p>Что мне это дало?</p>
+<ul>
+<li>у меня уже есть один интеграционный тест; следующий будет уже не так морально тяжело писать;</li>
+<li>у меня проверяется базовая работоспособность всех систем (web, db, memcached, clustering, dns, storage, oauth, etc);</li>
+<li>это в тысячу раз лучше, чем никаких тестов.</li>
+</ul>
+<p>Кстати, этот совет подходит не только для проектов, где нет никаких интеграционных тестов, но и вообще для любых первых тестов компонент. Сними страх белого листа и напиши первый самый простой тест.</p>
+<p>А пятница, кстати, это идеальный день, чтобы с нуля написать простой, но законченный приемочный тест ;-)</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Не стесняйся строить хеши</title>
+      <link>https://deadcode.dev/205/</link>
+      <guid isPermaLink="true">https://deadcode.dev/205/</guid>
+      <pubDate>Thu, 20 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Когда ты перемешиваешь в памяти разные структуры данных — не стесняйся строить себе по дороге полезные индексы.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> emailById = {};
+<span class="hljs-keyword">const</span> idByEmail = {};
+<span class="hljs-keyword">const</span> ids = [];
+<span class="hljs-keyword">const</span> emails = [];
+<span class="hljs-comment">// здесь мы запрашиваем "SELECT id, email FROM Users"</span>
+<span class="hljs-comment">// и строим два индекса и два массива</span>
+<span class="hljs-comment">// вместо одной линейной структуры</span></code></pre>
+<p>Скажешь, это расходует память? Конечно. А действительно ли у тебя столько данных в этом участке кода, что это важно? А что дороже — твое время или RAM? Ответы на оба вопроса, кстати, не всегда понятны. А об экономике оптимизации мы еще поговорим чуть позже.</p>
+<p>Скажешь, это очевидно? Я тоже так думаю. Но очень часто сталкиваюсь с тем, что молодые коллеги стесняются создавать множество структур на одни данные, как будто есть какая-то ментальная преграда.</p>
+<p>Так вот, ее нет: создавай столько индексов, сколько тебе хочется!</p>
+<p>(А если хочешь круто поменеджить память, то в JavaScript есть прекрасный оператор <code>delete</code>, о котором незаслуженно забывают.)</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Давай не будем?</title>
+      <link>https://deadcode.dev/204/</link>
+      <guid isPermaLink="true">https://deadcode.dev/204/</guid>
+      <pubDate>Wed, 19 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Зачем тебе делать огромный запрос к базе для выборки видосиков, если потом окажется, что к тебе еще не приехала свежая статистика просмотров, которую надо добавить? Сначала проверь, затем уже дергай базу.</p>
+<p>В теле метода или функции важно как можно раньше проверить, имеет ли смысл продолжать работу. Все негативные кейсы и проверки на невалидность данных или условий — должны выполняться как можно раньше. <a href="https://deadcode.dev/186/">И вне транзакции</a>. Только после того как ты проверил все негативные варианты — только тогда переходи к выполнению главной ветки кода.</p>
+<p>См. также «<a href="https://deadcode.dev/168/">#168 Возвращайся поскорее</a>» — эти два совета дополняют друг друга, и там как раз подходящий пример.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Как правильно валидировать email</title>
+      <link>https://deadcode.dev/199/</link>
+      <guid isPermaLink="true">https://deadcode.dev/199/</guid>
+      <pubDate>Tue, 18 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Это нетривиальный вопрос. Кроме всем известного <code>юзер@домен.ком</code> существует больше десятка валидных нотаций электронной почты, всякие там <code>юзер!хост!хост%хост</code> и подобные. Другой вопрос, что по современному инету такие письма уже не ходят.</p>
+<p>Валидировать емейл надо на фронтенде, чтобы юзеры не вводили всякую ерунду. Валидировать емейл надо на беке, чтобы ты понимал, где даже не стоит пытаться отправить подтверждающее письмо и не портить себе почтовую репутацию. Ну и наконец, валидировать емейл надо в эксплуатации, чтобы убедиться, что он настоящий и принадлежит человеку. Кстати, эту последнюю валидацию нужно проводить постоянно, забирая отлупы с почтового сервиса и сопоставляя со своей базой. Не самая тривиальная задача, кстати.</p>
+<p>Как я валидирую емейл на фронтенде: есть <code>@</code>, есть точка, длина не менее 5 символов. Почему 5? Потому что это единственное число, которое я могу обосновать. Емейл <code>a@a.a</code> — валидный, и никто не говорил, что любой из компонентов должен быть длиннее одного символа. Это всё! Как только ты начинаешь сюда добавлять другие правила, ты попадаешь в трясину, из которой тебя уже никто не вытащит. Хочешь по-настоящему заглянуть в бездну и валидировать емейл — открывай <a href="https://tools.ietf.org/html/rfc822">RFC 822</a> и прощай, милый друг.</p>
+<p>Как я валидирую емейл на беке: беру самый мейнстримный пакет и доверяю ему. Пусть весь мир парится над этой задачей, а кто-то другой за нее отвечает.</p>
+<p>Как я связываю эти два метода:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> email = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#email'</span>).value.trim().toLowerCase();
+<span class="hljs-comment">// локальная валидация: есть точка, есть @, длина</span>
+<span class="hljs-keyword">if</span> (!isValid(email)) {
+  showMessageEmailInvalid();
+  <span class="hljs-keyword">return</span>;
+}
+
+<span class="hljs-comment">// пробуем регистрировать юзера</span>
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> httpPostRegisterUser({ email });
+<span class="hljs-keyword">if</span> (result.success == <span class="hljs-literal">false</span> &amp;&amp; result.error == <span class="hljs-string">'email'</span>) {
+  <span class="hljs-comment">// не прошла расширенная валидация на беке</span>
+  showMessageEmailInvalid();
+  <span class="hljs-keyword">return</span>;
+}</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Передача подписанных данных через броузер</title>
+      <link>https://deadcode.dev/189/</link>
+      <guid isPermaLink="true">https://deadcode.dev/189/</guid>
+      <pubDate>Mon, 17 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Классический сервис: восстановление пароля. Классическое решение: создаем ссылку с уникальным токеном, отправляем письмо. Юзер переходит, мы находим токен в базе, разрешаем поменять пароль. Минусы: мы должны хранить токены вместе со всей обвязкой: база, ORM, репликации, и так далее.</p>
+<p>Более элегантное решение:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generateLink</span>(<span class="hljs-params">email</span>) </span>{
+  <span class="hljs-keyword">let</span> token = HMAC_SHA256(email + <span class="hljs-string">'|'</span> + expirationUnixtime, secret);
+  <span class="hljs-keyword">let</span> link = <span class="hljs-string">'https://example.com/recover/?t='</span> + token;
+  link += <span class="hljs-string">'&amp;email='</span> + email;
+  link += <span class="hljs-string">'&amp;sex='</span> + expirationUnixtime;
+  <span class="hljs-keyword">return</span> link;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">verify</span>(<span class="hljs-params">token, email, expirationUnixtime</span>) </span>{
+  <span class="hljs-keyword">let</span> correctToken = HMAC_SHA256(email + <span class="hljs-string">'|'</span> + expirationUnixtime, secret);
+  <span class="hljs-keyword">if</span> (correctToken == token) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+}</code></pre>
+<p>То есть в ссылку ты добавляешь все нужные данные, но подписанные. Когда юзер приходит по ссылке, он приносит с собой цифровую подпись, совпадение которой разрешает выполнить действия. (А чтобы ссылка не стала вечной, добавляем срок действия.)</p>
+<p>В моем основном проекте так происходит регистрация пользователей. Посетитель вводит почту, ему отправляется ссылка, и я создаю пользователя лишь тогда, когда он переходит по ней.</p>
+<p>Еще вариант использования: автологин из писем. Срок действия тут не нужен. В подпись важно добавить хеш пароля, чтобы старые ссылки прекратили работать, если пользователь его поменяет.</p>
+<p>Точно таким же методом можно хранить ценные данные в куках, разгружая серверный сторадж и логику.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Долго ли умеючи</title>
+      <link>https://deadcode.dev/186/</link>
+      <guid isPermaLink="true">https://deadcode.dev/186/</guid>
+      <pubDate>Fri, 14 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Транзакции с базой данных нужно открывать и закрывать как можно быстрее. Внутри транзакции категорически нельзя делать никакого ввода-вывода: ни записи/чтения файла, ни, упаси Боже, ответа веб-сервера.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript">db.query(<span class="hljs-string">'BEGIN'</span>);
+db.query(<span class="hljs-string">'UPDATE Videos SET viewsCount = viewsCount+1 WHERE videoId=14'</span>);
+<span class="hljs-keyword">const</span> count = db.query(<span class="hljs-string">'SELECT viewsCount FROM Videos WHERE videoId=14'</span>);
+res.send({
+  videoId,
+  count
+});
+db.query(<span class="hljs-string">'COMMIT'</span>);</code></pre>
+<p>Вот так делать нельзя! Пока думает сетевой код, табличка или запись или страница в базе остаются залочены. Такой код будет сильно тормозить сервис.</p>
+<p>Все данные перед транзакцией нужно приготовить, а все результаты из транзакции собрать в память. И сразу выйти.</p>
+<p>Скажешь, очевидно? Конечно. За январь я выловил три таких случая в коде, а год назад ровно на обнаружении этой проблемы мне удалось сократить затраты на базу с $600 до $138 в месяц.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>// FIXME</title>
+      <link>https://deadcode.dev/179/</link>
+      <guid isPermaLink="true">https://deadcode.dev/179/</guid>
+      <pubDate>Thu, 13 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>В программировании, как и в беседе, важно не отвлекаться на посторонние вещи. Поэтому я пишу сначала основные ветки кода, а обработчики мелких ошибок и edge cases пишу позже. Однако важно расставлять себе напоминания там, где в ближайшее время потребуется еще код.</p>
+<p>Я ставлю маркер <code>FIXME</code> в комментариях.</p>
+<pre class="code-padding"><code class="hljs code-padding language-c"><span class="hljs-keyword">if</span> (getUserStructure(userId, &amp;userStructure) == <span class="hljs-number">-1</span>) {
+  <span class="hljs-comment">// FIXME log this</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-number">-1</span>;
+}</code></pre>
+<p>Еще одна важная задача маркера <code>FIXME</code> — запомнить мелкую, но важную единицу знаний.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// FIXME remove after Feb 5th deploy</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkWithLegacyDatabase</span>(<span class="hljs-params">userId</span>) </span>{
+...
+}</code></pre>
+<p>Почему именно <code>FIXME</code>? Потому что отлично ищется.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Имена булевых переменных</title>
+      <link>https://deadcode.dev/177/</link>
+      <guid isPermaLink="true">https://deadcode.dev/177/</guid>
+      <pubDate>Wed, 12 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Булевые переменные должны начинаться с глагола to be: isAvailable, shouldReload, hasBeenDownloaded.</p>
+<p>Если булевая переменная выставляется внутри цикла, то я даю ей постфикс flag.</p>
+<pre class="code-padding"><code class="hljs code-padding language-c"><span class="hljs-keyword">int</span> failedFlag = <span class="hljs-number">0</span>;
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">int</span> i=<span class="hljs-number">0</span>; i &lt;= fileList.length; i++) {
+  <span class="hljs-keyword">if</span> (lstat(fileList[i], &amp;fileStat) == <span class="hljs-number">-1</span>) {
+    failedFlag = <span class="hljs-number">1</span>;
+  }
+}
+
+<span class="hljs-keyword">if</span> (failedFlag) {
+  <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">"At least one file failed, exit\n"</span>);
+  <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);
+}</code></pre>
+<p>Спрашиваешь, мол, ну что это за совет? А ты попробуй жестко придерживаться этого правила. Просто доверься мне и попробуй.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Легкий способ документировать код</title>
+      <link>https://deadcode.dev/174/</link>
+      <guid isPermaLink="true">https://deadcode.dev/174/</guid>
+      <pubDate>Tue, 11 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Никто не любит писать документацию на код. Никто не любит писать комментарии. Программиста это либо отвлекает  (и, следовательно, злит), либо заставляет усомниться в ясности своего кода (и, следовательно, злит). Но все же документация и комментарии нужны — и для коллег, и для потомков.</p>
+<p>Есть идеальный способ.</p>
+<p>Описания методов и комментарии в коде лучше всего писать под самый-самый конец рабочего дня, когда очень устал и голова уже не соображает. Вот как полностью разряженная батарейка еще вполне способна полчаса поработать в фонарике, так и уставший программист — способен беседовать (письменно).</p>
+<p>Почему так?</p>
+<p>Это связано с особенностью потребления энергии мозгом. Чтобы писать код, нужно интенсивно и системно <em>думать.</em> Это энергозатратный процесс и он не может продолжаться вечно. Условно говоря, это CPU. Чтобы писать комментарии, нужно <em>вспоминать</em> и <em>говорить</em> (письменно). Оба процесса — бессознательные и как бы рефлекторные, за них отвечают отдельные участки коры головного мозга. Условно — это твой GPU. Более того, написание документации в моменты усталости может стать приятным. Комментирование позволит тебе немного разгрузиться от мыслей о работе, как бы парадоксально это не звучало. Может так стать, что 10 мин написания документации позволят тебе вернуться домой в более свежем состоянии, чем сразу после кода.</p>
+<p>Ну и, конечно, важно что сегодня у тебя бесплатно доступна краткосрочная память и тебе не нужно вспоминать.</p>
+<p>Важно: этот совет вряд ли поможет в написании какой-либо документации вне кода.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Tocken bucket</title>
+      <link>https://deadcode.dev/170/</link>
+      <guid isPermaLink="true">https://deadcode.dev/170/</guid>
+      <pubDate>Mon, 10 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Скажем, что тебе нужно вызывать функцию не чаще чем несколько раз в секунду, но иногда чаще, но не очень часто. А если все-таки часто, то ненадолго, чтобы потом снова медленно.</p>
+<p>Простейший rate limit вида <code>if (now - lastTime &lt; 10) { return }</code> в такой ситуации не поможет.</p>
+<p>На помощь приходит гениальный алгоритм Tocken bucket. Представь себе шкатулку, куда падает 1 жетон в секунду. В шкатулке помещается только 10 жетонов. Каждый вызов функции забирает 1 жетон.</p>
+<p>Если шкатулка наполнена, то у тебя есть возможность вызвать функцию десять раз подряд без паузы (burst). Если она пустая, то функция будет вызываться раз в секунду, как только падает жетон (rate limit). Пришел покой — в шкатулке накопятся жетоны и снова появится возможность сделать burst.</p>
+<p>Применение алгоритма — широчайшее.</p>
+<p>Например, так сдерживают процессор на виртуальных машинах — чтобы на мелких виртуалках быстро отрабатывали всякие <code>apt upgrade</code>, но чтобы они все равно оставались мелкими.</p>
+<p>На таком же фундаментальном принципе основана защита от DoS-атак.</p>
+<p>И так далее.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Возвращайся поскорее</title>
+      <link>https://deadcode.dev/168/</link>
+      <guid isPermaLink="true">https://deadcode.dev/168/</guid>
+      <pubDate>Fri, 07 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Чем глубже у тебя вложенность кода, тем тяжелее в нем ориентироваться. Вот типичный код:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// Было:</span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">findSponsorByCookieValue</span>(<span class="hljs-params">db, affiliateCookieValue</span>) </span>{
+  <span class="hljs-keyword">if</span> (affiliateCookieValue) {
+    <span class="hljs-keyword">const</span> splitValue = affiliateCookieValue.split(<span class="hljs-string">'.'</span>);
+
+    <span class="hljs-keyword">if</span> (splitValue.length == <span class="hljs-number">2</span>) {
+      <span class="hljs-keyword">const</span> userId = splitValue[<span class="hljs-number">0</span>];
+
+      <span class="hljs-keyword">if</span> (!isNumber(userId)) {
+        <span class="hljs-keyword">const</span> user = db.User.findById(userId);
+
+        <span class="hljs-keyword">if</span> (user) {
+          <span class="hljs-keyword">if</span> (user.isEnabled() &amp;&amp; user.deletedAt === <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">const</span> incomingToken = splitValue[<span class="hljs-number">1</span>];
+            <span class="hljs-keyword">const</span> validToken = tokenCreateByUserId(user.id);
+            <span class="hljs-keyword">if</span> (incomingToken == validToken) {
+              <span class="hljs-keyword">return</span> user;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+}</code></pre>
+<p>Что здесь печального, кроме глубины и тяжести восприятия? Смотри: из такого кода не очевидны выходы. Сколько вариантов выхода с негативным ответом ты здесь видишь? Посчитай. А покажи пальцем, где в коде возвращается положительный результат?</p>
+<p>Один из моих любимых приемов бороться с таким — это как можно скорее выходить из метода в случае негативной ситуации.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// Стало</span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">findSponsorByCookieValue</span>(<span class="hljs-params">db, affiliateCookieValue</span>) </span>{
+  <span class="hljs-keyword">if</span> (!affiliateCookieValue) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+  }
+
+  <span class="hljs-keyword">const</span> splitValue = affiliateCookieValue.split(<span class="hljs-string">'.'</span>);
+  <span class="hljs-keyword">if</span> (splitValue.length != <span class="hljs-number">2</span>) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+  }
+
+  <span class="hljs-keyword">const</span> userId = splitValue[<span class="hljs-number">0</span>];
+  <span class="hljs-keyword">if</span> (!isNumber(userId)) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+  }
+
+  <span class="hljs-keyword">const</span> user = db.User.findById(userId);
+  <span class="hljs-keyword">if</span> (!user) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+  }
+
+  <span class="hljs-keyword">if</span> (!user.isEnabled()) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+  }
+
+  <span class="hljs-keyword">if</span> (user.disabledAt) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+  }
+
+  <span class="hljs-keyword">const</span> incomingToken = splitValue[<span class="hljs-number">1</span>];
+  <span class="hljs-keyword">const</span> validToken = tokenCreateByUserId(user.id);
+
+  <span class="hljs-keyword">if</span> (validToken != incomingToken)  {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+  }
+
+  <span class="hljs-keyword">return</span> user;
+}</code></pre>
+<p>Обрати внимание:</p>
+<ul>
+<li>Все негативные выходы видны сразу</li>
+<li>Позитивный выход всегда в конце</li>
+<li>Все выходы на одном уровне вложенности</li>
+<li>Глубина минимальная</li>
+<li>Легко читается</li>
+</ul>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Название структуры и ее члена должны быть одинаковыми</title>
+      <link>https://deadcode.dev/166/</link>
+      <guid isPermaLink="true">https://deadcode.dev/166/</guid>
+      <pubDate>Thu, 06 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Стремись, чтобы у тебя было единообразие названий, когда пишешь цикл или работаешь с множествами. Если список назван X, то и элемент списка нужно называть так же.</p>
+<p>Это заметно снижает ментальную нагрузку на чтение и облегчает понимание кода. </p>
+<p>Правильно:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> entry <span class="hljs-keyword">of</span> entries) {
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> projectEntry <span class="hljs-keyword">of</span> projectList) {
+
+users.forEach(<span class="hljs-function"><span class="hljs-params">user</span> =&gt;</span> {
+
+<span class="hljs-keyword">const</span> user = db.getNextUser();
+
+<span class="hljs-keyword">const</span> email = emails.shift();</code></pre>
+<p>Неправильно:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript">profitsResult.forEach(<span class="hljs-function"><span class="hljs-params">dayProfitItem</span> =&gt;</span> {
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> entry <span class="hljs-keyword">of</span> projects) {
+
+<span class="hljs-keyword">const</span> result = db.getNextUser();
+
+<span class="hljs-keyword">const</span> email = list.shift();</code></pre>
+<p>Вообще ужас:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> result <span class="hljs-keyword">of</span> data) {</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Заголовок бинарного формата</title>
+      <link>https://deadcode.dev/163/</link>
+      <guid isPermaLink="true">https://deadcode.dev/163/</guid>
+      <pubDate>Wed, 05 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Когда разрабатываешь собственный бинарный формат хранения данных, обязательно придумай ему заголовок. Это такая структура фиксированной длины, с которой будет начинаться твой файл. Она содержит:</p>
+<p><strong>Magic.</strong> Первые произвольные несколько байт, по которым ты сможешь определить, что это именно твой файл.</p>
+<p><strong>Номер версии.</strong> Сегодня ты придумал формат хранения данных, и он прекрасен, но уже завтра тебе нужно будет добавить туда еще пару полей или новый тип сжатия. И как ты будешь отличать старые файлы от новых и читать оба формата? Версия нужна сразу.</p>
+<p><strong>Размер файла блока данных.</strong> Обычно я пишу туда размер файла минус размер заголовка. Другой вариант: <strong>количество записей.</strong> Так ты в парсере сможешь проверить, что файл у тебя полный.</p>
+<p><strong>Контрольная сумма.</strong> На практике достаточно даже MD4, она очень быстрая. Это не вопрос цифровой подписи.</p>
+<p><strong>Пустое место.</strong> Буквально несколько байт на будущее. Когда ты будешь апгрейдить файлы версии 1 в версию 2, тебе гораздо проще будет перезаписать заголовок той же длины в существующий файл, чем сдвинуться на байт и переписать все целиком.</p>
+<p>Размер заголовка я стараюсь делать <strong>кратным 2,</strong> а все поля — <strong>кратными 4 байт,</strong> даже номер версии. Почему? Так проще держать структуру в уме и читать ее как из C так и JS.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Вынеси отдельно запись и чтение структур данных</title>
+      <link>https://deadcode.dev/159/</link>
+      <guid isPermaLink="true">https://deadcode.dev/159/</guid>
+      <pubDate>Tue, 04 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Когда ты работаешь над бизнес-логикой, тебе меньше всего хочется отвлекаться на низкоуровневые особенности хранения данных. Когда ты пишешь код хранилища, тебе не до высокого уровня бизнес-логики. Твое внимание и его концентрация — это самый дорогой ресурс в работе, поэтому фокусировать его нужно прицельно.</p>
+<p>Весь код, который превращает высокоуровневые структуры данных (<code>User</code>, <code>Project</code>) в записи на диске (<code>users.json</code>, <code>db.Projects</code>, и т.п.) — нужно выделять в отдельные методы.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// Было</span>
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> record <span class="hljs-keyword">of</span> records) {
+  <span class="hljs-keyword">const</span> user = {
+    <span class="hljs-attr">id</span>: record.id,
+    <span class="hljs-attr">login</span>: record.email,
+    <span class="hljs-attr">password</span>: encrypt(record.password),
+    <span class="hljs-attr">createdAt</span>: <span class="hljs-built_in">Date</span>.now()
+  };
+
+  users[id] = user;
+}
+
+fs.writeFileSync(<span class="hljs-string">'users.json'</span>, <span class="hljs-built_in">JSON</span>.stringify(users));
+
+<span class="hljs-comment">// Стало, например:</span>
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> record <span class="hljs-keyword">of</span> records) {
+  users.addUser({
+    <span class="hljs-attr">id</span>: record.id,
+    <span class="hljs-attr">login</span>: record.email,
+    <span class="hljs-attr">password</span>: record.password
+  });
+}
+
+<span class="hljs-keyword">await</span> users.sync();</code></pre>
+<pre class="code-padding"><code class="hljs code-padding language-c"><span class="hljs-comment">// Было</span>
+
+<span class="hljs-keyword">char</span> *line = <span class="hljs-built_in">malloc</span>(<span class="hljs-number">1024</span>); <span class="hljs-comment">// так нельзя, конечно, но пост не об этом</span>
+<span class="hljs-built_in">sprintf</span>(line, <span class="hljs-string">"%s %s %s\n"</span>, dateString, subsystem_name, formattedLine);
+<span class="hljs-built_in">fputs</span>(line, LOG_FILE);
+fflush(LOG_FILE);
+<span class="hljs-built_in">free</span>(line);
+
+<span class="hljs-comment">// Стало</span>
+
+<span class="hljs-built_in">log</span>(subsystem_name, <span class="hljs-string">"%s failed to join record"</span>, tableName);</code></pre>
+<p>Ты возразишь: я пользуюсь ORM, у меня это само собой.</p>
+<p>Но нет. Для тебя ORM — это просто такое высокоуровневое хранилище. Скажем, если у тебя записи о пользователях и платежах раскиданы по разным моделям, то все равно где-то есть код, создающий нового пользователя. И там тебе нужно: создать пользователя, создать подписку в записи историй, присвоить пользователю доступ к платным фичам, а еще и провести платеж по финансовым табличкам. Все это вместе назови <code>createPaidUser()</code> в новой модели <code>PaymentController</code>.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Нормализация парсинга</title>
+      <link>https://deadcode.dev/153/</link>
+      <guid isPermaLink="true">https://deadcode.dev/153/</guid>
+      <pubDate>Mon, 03 Feb 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Когда парсишь CSV-файлы или строковые значения из внешнего мира, обрати внимание, что человеческие надписи будут внезапно меняться.</p>
+<p>Например, столбец в CSVшке раньше назывался &#39;App&nbsp;Id&#39;, а сегодня — &#39;App&nbsp;ID&#39;. Просто кто-то решил, что красиво будет айди написать прописными буквами. Кто-то случайно вставил еще один пробел и, конечно же, не видит его. Кто-то заменил # на №. Кто-то увидел, что грамотно будет писать через запятую. И так далее. В конце концов, это же заголовок для человека, а не для кода.</p>
+<p>Если твой парсер рассчитывает найти столбец &#39;App&nbsp;Id&#39; — он жестко сломается, а за ним и разбор статистики, а за ней отчетность, а за ней апокалипсис.</p>
+<p>Правильно делать нормализацию. Все полученные человеческие строки следует приводить к единому виду. В таком случае у тебя остается шанс поймать все вариации, а парсер будет корректно работать не только сегодня:</p>
+<ul>
+<li>lower case</li>
+<li>заменяем все знаки препинания на пробел</li>
+<li>заменяем все цепочки whitespace на один пробел</li>
+<li>обрезаем пробелы по сторонам</li>
+</ul>
+<p>И для самых злых случаев:</p>
+<ul>
+<li>убираем артикли</li>
+<li>сортируем слова</li>
+</ul>
+<p>Такой подход стоит применять почаще. Скажем, я нередко встречаю ситуацию, когда ошибки из API возвращаются в виде человеческих строк, а не кодов — их категорически нельзя просто втупую сравнивать с эталонными.</p>
+<p><img class="img-fluid" src="https://deadcode.dev/153/153.png" alt="Парсер ратификаций конвенций ООН"></p>
+<p>На картинке: вот столько кода занимает парсер .csv списка стран, ратифицировавших конвенции ООН. Это очень простая табличка Страна-Конвенция-Ратифицировала-Год, но ее публикуют люди для людей и это кошмар.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Всегда возвращай Content-Length</title>
+      <link>https://deadcode.dev/151/</link>
+      <guid isPermaLink="true">https://deadcode.dev/151/</guid>
+      <pubDate>Fri, 31 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>...в http-сервере. Думаешь, это очевидно? Колупаясь в исходниках различных фреймворков я заметил, что очень часто этот заголовок не возвращают. Типа, и так работает.</p>
+<p>Это очень важный заголовок для множества не самого очевидного вебного софта: от исходящих до входящих проксей, от сервера до броузера. Увидев этот заголовок от софта, веб-сервер знает, когда нужно будет (или не нужно будет) закрывать http-соединение. Увидев этот заголовок, броузер знает, в какой момент больше не ждать загрузки ресурса и можно заканчивать его парсинг. KeepAlive нормально не работает без <code>Content-Length</code>. Корректная загрузка файла невозможна без <code>Content-Length</code>. Анализаторы сайтов не помогут с файлами неопределенных размеров.</p>
+<p><code>Content-Length</code> нужно ставить абсолютно всегда.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Научись расставлять пустые строки</title>
+      <link>https://deadcode.dev/148/</link>
+      <guid isPermaLink="true">https://deadcode.dev/148/</guid>
+      <pubDate>Thu, 30 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>В статьях есть параграфы. В книгах есть абзацы.</p>
+<p>В коде тоже нужно научиться расставлять пустые строки между участками кода, которые делают разные вещи. Вообще, это больше искусство и вопрос вкуса, чем формальность, но в принципе для начала можно внедрить и простые правила. Например, ставим пустую строку:</p>
+<ul>
+<li>после цикла, перед if, else, while, do</li>
+<li>перед каждым условием switch()</li>
+<li>перед возвращением результата</li>
+<li>между методами</li>
+</ul>
+<p>Проще всего научиться разбивать код на параграфы, читая его вслух. Где сделал вдох — там и ставь.</p>
+<p>Параграфы снижают когнитивную нагрузку на чтение кода, а это очень важно для совместной работы.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Файлы следует сохранять атомарно</title>
+      <link>https://deadcode.dev/142/</link>
+      <guid isPermaLink="true">https://deadcode.dev/142/</guid>
+      <pubDate>Wed, 29 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Допустим, ты пишешь простенький кеш для скачивания файлов, чтобы твой код не качал одно и то же по несколько раз:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">file</span>) </span>{
+  <span class="hljs-keyword">if</span> (exists(file)) {
+    <span class="hljs-keyword">return</span> file;
+  }
+
+  <span class="hljs-keyword">const</span> data = download(file);
+  save(file, data);
+
+  <span class="hljs-keyword">return</span> file;
+}
+
+<span class="hljs-comment">// было:</span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">save</span>(<span class="hljs-params">filename, data</span>) </span>{
+  write(filename, data);
+}</code></pre>
+<p>В таком коде может произойти ситуация, когда файл еще не дописался внутри <code>save()</code>, но уже кому-то отдался неполный. Потому что <code>exists(file)</code> станет <code>true</code> сразу после открытия файла на запись, еще задолго до того, как был записан первый байт.</p>
+<p>Чтобы такого не происходило — файл следует писать атомарно:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// стало: </span>
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">save</span>(<span class="hljs-params">filename, data</span>) </span>{
+  <span class="hljs-comment">// придумай временное имя</span>
+  <span class="hljs-keyword">const</span> tmpFilename = filename + <span class="hljs-string">'.tmp'</span>;
+
+  <span class="hljs-comment">// если рядом кто-то уже пишет во временный файл —</span>
+  <span class="hljs-comment">// это означает что он точно закончит запись</span>
+  <span class="hljs-comment">// и целевой файл скоро появится.</span>
+  <span class="hljs-keyword">if</span> (exists(tmpFilename)) {
+    <span class="hljs-keyword">return</span>;
+  }
+
+  <span class="hljs-comment">// неспешно пишем во временный файл</span>
+  write(tmpFilename, data);
+
+  <span class="hljs-comment">// если целевой файл появился, пока мы писали временный —</span>
+    <span class="hljs-comment">// это означает что кто-то быстрее нас скачал и записал.</span>
+  <span class="hljs-keyword">if</span> (exists(filename)) {
+    <span class="hljs-keyword">return</span>;
+  }
+
+  <span class="hljs-comment">// переименовали временный файл в целевой.</span>
+  <span class="hljs-comment">// одна операция, файл сразу появится целиком!</span>
+  rename(tmpFilename, filename);
+}</code></pre>
+<p>Обрати внимание: в таком коде на любом этапе исключены проблемы с целостностью данных.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Больше классов!</title>
+      <link>https://deadcode.dev/137/</link>
+      <guid isPermaLink="true">https://deadcode.dev/137/</guid>
+      <pubDate>Tue, 28 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Не стесняйся создавать отдельный класс для каждой маленькой сущности, если у нее есть <strong>понятное имя</strong> и метод. Не страшно, когда в коде много классов. Страшно, когда в коде много <strong>непонятных</strong> классов или когда трудно искать код.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LegacyLoginConnector</span> </span>{
+  <span class="hljs-keyword">static</span> verify(login, password) {
+    <span class="hljs-keyword">const</span> body = http.post(
+      <span class="hljs-string">'http://legacy.example.com/checkLogin/'</span>, 
+      { login, password }
+    );
+    <span class="hljs-keyword">return</span> (body &amp;&amp; body.success == <span class="hljs-literal">true</span>);
+  }
+}</code></pre>
+<p>Можешь давать таким классами постфиксы в названиях: Connector, Helper, Adapter, Controller, Tools и так далее — чтобы было очевидно, что это не сущность.</p>
+<p>(Кроме того, маленькие классы легко покрывать тестами.)</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Дрифтуй во сне</title>
+      <link>https://deadcode.dev/132/</link>
+      <guid isPermaLink="true">https://deadcode.dev/132/</guid>
+      <pubDate>Mon, 27 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Очень часто <code>sleep()</code> заслуживает, чтобы в него добавили небольшой рандомчик. Все задачи по разгребанию очереди, поллинга, проверки семафоров, перерывы для разгрузки внешних ресурсов — все эти паузы стоит делать немного случайными.</p>
+<pre class="code-padding"><code class="hljs code-padding language-c">sleep(SLEEP_TIME_MIN + round(rand() * SLEEP_TIME_DRIFT)));</code></pre>
+<p>В любой сложной системе происходит миллион вещей, и чем меньше в ней одинаковых пауз — тем плавнее будет распределяться износ. Очевидный пример: если у тебя разборщики очереди работают на множестве серверов, то одинаковое время паузы приведет к тому, что каждые несколько часов все разборщики станут спрашивать базу в унисон.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>setInterval() не нужен</title>
+      <link>https://deadcode.dev/129/</link>
+      <guid isPermaLink="true">https://deadcode.dev/129/</guid>
+      <pubDate>Fri, 24 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Допустим, нужно разбирать очередь. Типовой подход: раз в пару секунд спрашивать <code>SELECT * FROM queue</code>. Типовое решение: <code>setInterval(checkQueue, 2000)</code>.</p>
+<p>Беда!</p>
+<p>Ты не знаешь, сколько времени у тебя займет <code>checkQueue()</code>. Никто не обещал, что это будет быстро или что запрос и вовсе не зависнет в блокировке. <code>setInterval()</code> ничего про это не знает, он снова вызовет метод — и привет, снежный ком. В лучшем случае у тебя упадет скрипт.</p>
+<p>А на выходных — будь уверен: через минуту все блокировки снимутся и 30 запущенных <code>checkQueue()</code> все вместе дружно начнут исполнять одни и те же задачи.</p>
+<p>Правильное решение: регулярный вызов <code>setTimeout()</code> в конце <code>checkQueue()</code>.</p>
+<p>Метод выполняется (за секунду или за минуту — неважно), и только потом снова себя вызывает через две секунды.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cycle</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">const</span> jobs = <span class="hljs-keyword">await</span> db.getQueue();
+  <span class="hljs-keyword">await</span> runJobs(jobs);
+  <span class="hljs-keyword">set</span><span class="hljs-title">Timeout</span>(<span class="hljs-params">cycle, <span class="hljs-number">2000</span></span>);
+}
+
+<span class="hljs-title">cycle</span>();</code></pre>
+<p>Плюсы:</p>
+<ul>
+<li>пауза для хранилища</li>
+<li>не будет снежного кома</li>
+<li>задачи будут исполняться максимально быстро, но ни секундой быстрее</li>
+</ul>
+<p>Бонус: можно ставить разные таймауты в зависимости от наличия задач в очереди.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Не смешивай данные и метаданные</title>
+      <link>https://deadcode.dev/123/</link>
+      <guid isPermaLink="true">https://deadcode.dev/123/</guid>
+      <pubDate>Thu, 23 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Типовая ситуация: ты пишешь кеш. Запись в кеше — это сами данные и unixtime, когда они были получены.</p>
+<p>Популярная ошибка — хранить данные и метаданные (дату добавления) на одном уровне:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">addToCache</span>(<span class="hljs-params">key, data = {}</span>) </span>{
+  data.addedAt = <span class="hljs-built_in">Date</span>.now();
+
+  cache[key] = data;
+}</code></pre>
+<p>Не стоит так делать. Не ты создал data, не тебе ее и модифицировать. Кроме того, это абсолютно не очевидно, что код, обслуживающий кеш, может добавлять ключи. (Не говоря уже о том, что <code>addedAt</code> там уже может быть занят).</p>
+<p>Правильно:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">addToCache</span>(<span class="hljs-params">key, data = {}</span>) </span>{
+  <span class="hljs-keyword">const</span> cacheEntry = {
+    <span class="hljs-attr">addedAt</span>: <span class="hljs-built_in">Date</span>.now(),
+    data
+  };
+
+  cache[key] = cacheEntry;
+}</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Позволь себе красоту</title>
+      <link>https://deadcode.dev/122/</link>
+      <guid isPermaLink="true">https://deadcode.dev/122/</guid>
+      <pubDate>Wed, 22 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Абсолютно не надо стесняться кода, написанного исключительно ради красоты.</p>
+<p>Причем красота — это не навернуть в одну строку <code>.map().filter().reduce()</code>, а красота — это то, что облегчает ментальную нагрузку при работе с кодом.</p>
+<p>Сравни три варианта обработчика ошибок. Какой проще читается?</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, source, lineno, colno, error</span>) </span>{
+  <span class="hljs-keyword">return</span> (message || <span class="hljs-string">'(none)'</span>) + <span class="hljs-string">' '</span> +
+    (source || <span class="hljs-string">'(none)'</span>) + <span class="hljs-string">':'</span> (lineno || <span class="hljs-string">'(none)'</span>) + <span class="hljs-string">':'</span> (colno || <span class="hljs-string">'(none)'</span>);
+}
+
+
+<span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, source, lineno, colno, error</span>) </span>{
+  <span class="hljs-keyword">const</span> NONE = <span class="hljs-string">'(none)'</span>;
+
+  <span class="hljs-keyword">const</span> line = (message || NONE) + <span class="hljs-string">' '</span> +
+    (source || NONE) + <span class="hljs-string">':'</span> (lineno || NONE) + <span class="hljs-string">':'</span> (colno || NONE);
+
+  <span class="hljs-keyword">return</span> line;
+}
+
+
+<span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, source, lineno, colno, error</span>) </span>{
+  <span class="hljs-keyword">const</span> NONE = <span class="hljs-string">'(none)'</span>;
+
+  <span class="hljs-keyword">const</span> location = (source || NONE) + <span class="hljs-string">':'</span> (lineno || NONE) + <span class="hljs-string">':'</span> (colno || NONE);
+
+  <span class="hljs-keyword">return</span> (message || NONE) + <span class="hljs-string">' '</span> + location;
+}</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Опасность девелоперских костылей в продакшне</title>
+      <link>https://deadcode.dev/121/</link>
+      <guid isPermaLink="true">https://deadcode.dev/121/</guid>
+      <pubDate>Tue, 21 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>В девелопменте всегда есть соблазн временно отключить проверку паролей. Типичный вариант:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">authorizeUser</span>(<span class="hljs-params">username, password</span>) </span>{
+  <span class="hljs-keyword">if</span> (isDevelopment) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+  <span class="hljs-comment">// ...</span>
+}</code></pre>
+<p>Очевидно же, что в продакшне <code>isDevelopment</code> никогда не станет истиной,  потому что не так написано в конфиге.</p>
+<p>И тем более обидно, когда это неизбежно происходит. Стоит один только раз этому коду сломаться — и ты будешь готов на что угодно, чтобы только вернуть время вспять.</p>
+<p>Поэтому никаких <code>if (isDevelopment)</code>. Постели себе дополнительную соломку:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">authorizeUser</span>(<span class="hljs-params">username, password</span>) </span>{
+  <span class="hljs-keyword">if</span> (
+    isDevelopment
+    &amp;&amp;
+    md5(today + db.host) == env.PASSWORD_SKIP
+  ) {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  }
+}</code></pre>
+<p>Можешь с утра выставить переменную окружения <code>PASSWORD_SKIP</code> в нужное значение и приступить к работе.</p>
+<pre class="code-padding"><code class="hljs code-padding language-bash"><span class="hljs-built_in">echo</span> -n  <span class="hljs-string">"2019-01-21"</span><span class="hljs-string">"localhost"</span><span class="hljs-string">"sirko"</span> | md5sum -</code></pre>
+<p>В продакшн такая переменная никогда не попадет, а если и попадет, то никогда не примет нужное значение.</p>
+<p>Важный момент #0: нельзя просто проверять <code>if (env.PASSWORD_SKIP)</code>, потому что так ты проверяешь просто наличие переменной окружения. Вероятность того, что она появится в продакшне — мизерная, но не нулевая. Вероятность, что она совпадет с контрольной суммой от дня и имени базы — ноль.</p>
+<p>Важный момент #1: вычислять ее значение нужно обязательно вручную. Как только ты засунул это в скрипт - он рано или поздно запустится в продакшне.</p>
+<p>Важный момент #2: обязательно нужна дата, чтобы правильное значение не было вечным. Так ты сокращаешь себе во времени площадь уязвимостей.</p>
+<p>Важный момент #3: нельзя делать <code>if (password ==  &#39;секретное слово&#39;)</code>. Это потенциально эксплуатируемо в продакшне и следовательно это дыра. Слили твой код — получили доступ ко всем аккаунтам, а ты в это время ночью спал.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>«Режим репетиции» в скриптах</title>
+      <link>https://deadcode.dev/120/</link>
+      <guid isPermaLink="true">https://deadcode.dev/120/</guid>
+      <pubDate>Mon, 20 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>По-русски это называется «dry run». Любой скрипт, выполнение которого стоит дорого, должен иметь режим имитации действий. Грубо говоря, вывод на экран вместо удаления файлов.</p>
+<p>Нужно это не только лишь для отладки кода во время разработки, но и для постоянного контроля в жизни.</p>
+<p>А особо дорогие скрипты должны этот режим выполнять по умолчанию, чтобы случайно не грохнуть чего лишнего.</p>
+<p>Свежий пример. Писал короткий скрипт с целью очистить местную группу в телеграме от сотен китайских спам-ботов. Алгоритм простой: идем по всем именам в чате, и если имя состоит из иероглифов — баним.</p>
+<p>В продакшне оказалось, что наскоро выбранный модуль, которым я определял, китайский ли язык, дает true на половину всех участников. Как так? Легко: он, зараза, понимает китайскую транслитерацию.</p>
+<p>Привычка реализовывать dry run спасла украинский клуб автолюбителей от уничтожения.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Легкий способ начать рабочий день</title>
+      <link>https://deadcode.dev/119/</link>
+      <guid isPermaLink="true">https://deadcode.dev/119/</guid>
+      <pubDate>Fri, 17 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Вечером сохрани себе в TODO на утро какую-нибудь быстро выполнимую и маленькую задачу (но не тривиальную).</p>
+<p>С утра ты сделаешь ее первой и прямо сразу же у тебя появится ощутимый результат твоей деятельности. Ты насладишься впрыском дофамина: у тебя поднимется настроение и ты почувствуешь удовлетворение от своих трудов.</p>
+<p>Дальше включается принцип «аппетит приходит во время еды». Пока ты делал простую задачу — ты разогрелся и вошел в контекст, и на горячий мозг можно браться уже и за более серьезные задачи, которые казались тяжкими и неприятными накануне.</p>
+<p>Неподходящие задачи:</p>
+<ul>
+<li>обновить пакеты — слишком тривиально, сделаешь рефлекторно</li>
+<li>дописать недостающие &#39;;&#39; в коде — рефлекторно и нудно</li>
+<li>сделать поддержку юзерских аватарок — большая задача</li>
+</ul>
+<p>Подходящие задачи:</p>
+<ul>
+<li>перевести остаток статических страниц html на темплейты</li>
+<li>написать демона, удаляющего старые записи из базы</li>
+<li>сдобрить написанный вчера алгоритм комментариями и документацией</li>
+</ul>
+<p>Я так делаю уже около десяти лет.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Самый лучший способ временно спрятать код</title>
+      <link>https://deadcode.dev/118/</link>
+      <guid isPermaLink="true">https://deadcode.dev/118/</guid>
+      <pubDate>Thu, 16 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Нет, это не <code>/* .. */</code></p>
+<p>Самый лучший способ временно убрать код — это <code>if (0) { .. }</code></p>
+<p>Выключенный таким образом код:</p>
+<ul>
+<li>проверяется линтером</li>
+<li>компилируется</li>
+<li>валидируется синтаксически</li>
+<li>гораздо более живучий</li>
+</ul>
+<p>Когда потребуется вернуть его обратно — у тебя не будет мучительного выбора «а не проще ли это все заново переписать». Не проще: смотри, вот же рабочий код.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Простой способ получить неравномерное распределение случайных чисел</title>
+      <link>https://deadcode.dev/117/</link>
+      <guid isPermaLink="true">https://deadcode.dev/117/</guid>
+      <pubDate>Wed, 15 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<pre class="code-padding"><code class="hljs code-padding language-javascript">(rand() + rand()) / <span class="hljs-number">2</span></code></pre>
+<p>Среднее из двух рандомных значений — простой способ получить неравномерное распределение с пиком посередине.</p>
+<p>На графике — пример такого распределения (10,000 семплов 0..1000).</p>
+<p><img class="img-fluid" src="https://deadcode.dev/117/117.png" alt="График распределения"></p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Полезно указывать тип данных, возвращаемых функцией</title>
+      <link>https://deadcode.dev/116/</link>
+      <guid isPermaLink="true">https://deadcode.dev/116/</guid>
+      <pubDate>Tue, 14 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Для простых типов можно указывать результат одним словом:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">get</span><span class="hljs-title">PublishersCount</span>()
+<span class="hljs-title">generateHtmlTemplateString</span>()</code></pre>
+<p>Для более сложных случаев стоит дать название структуре данных, которую возвращает метод или функция. В C/C++ без названия особо-то и не получится, а вот в чистом JS нет механизма определения типов данных. Поэтому я пишу определение структуры в синтаксисе TypeScript, не используя при этом сам TypeScript:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">/*
+interface JobRecord {
+  id: number;
+  name: string;
+  path: string;
+  isActive?: boolean;
+}
+*/</span>
+
+<span class="hljs-keyword">get</span><span class="hljs-title">JobRecordById</span>(<span class="hljs-params">jobId</span>) {
+}
+
+<span class="hljs-keyword">get</span><span class="hljs-title">UserInstance</span>() {
+}
+
+<span class="hljs-keyword">get</span><span class="hljs-title">StatsByUserIdByDate</span>(<span class="hljs-params">userId</span>) {
+}</code></pre>
+<p>Можно не описывать тип данных для методов, которые возвращают записи из базы данных — будем считать, что здесь все очевидно:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">get</span><span class="hljs-title">UserRecord</span>() {
+}</code></pre>
+<p>И еще. Я считаю вредным указывать именно тип данных в названии. Когда метод называется <code>getPublishersCount()</code>, словечко <code>Int</code> в нем не добавит ясности.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Все строки для людей — в двойных кавычках, все строки для компьютера — в одинарных</title>
+      <link>https://deadcode.dev/115/</link>
+      <guid isPermaLink="true">https://deadcode.dev/115/</guid>
+      <pubDate>Sun, 12 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Так можно с первого взгляда определить, кому адресована строка в коде. Вот пример, где в интерфейс беком передается информация о платеже. Представим себе, что интерфейс умеет показывать название платежной системы красивым шрифтом. Тут сразу прозрачно понятно, какая строка сформирована для человека, а какая — для кода UI. (Конечно, постфикс &quot;Label&quot; тоже помогает).</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> result = {
+  <span class="hljs-attr">paymentSystem</span>: <span class="hljs-string">'stripe'</span>,
+  <span class="hljs-attr">paymentSystemLabel</span>: <span class="hljs-string">"stripe"</span>
+}</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>Полезно перечислять названия параметров в названии функции</title>
+      <link>https://deadcode.dev/114/</link>
+      <guid isPermaLink="true">https://deadcode.dev/114/</guid>
+      <pubDate>Sun, 12 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<p>Так будет проще читать код. Вообще, не стоит бояться длинных идентификаторов. Бояться надо непонятных идентификаторов, а длинные — это сплошная радость, если они читаются легко и вносят ясность. Код, написанный человеческим языком — это почти документация нашару.</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// что такое id? А userId — это, наверное, owner проекта?</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getProjectsList</span>(<span class="hljs-params">id, userId</span>) </span>{
+}
+
+<span class="hljs-comment">// а, это древовидная структура тех проектов, где userId является участником</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getProjectsListByParentProjectIdForMemberUserId</span>(<span class="hljs-params">projectId, userId</span>) </span>{
+}</code></pre>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+    <item>
+      <title>«Волшебные» строки нужно определять в константы</title>
+      <link>https://deadcode.dev/113/</link>
+      <guid isPermaLink="true">https://deadcode.dev/113/</guid>
+      <pubDate>Sun, 12 Jan 2020 12:00:00 GMT</pubDate>
+      <description><![CDATA[<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// определяем модель данных</span>
+<span class="hljs-attr">paymentProvider</span>: {
+  <span class="hljs-attr">type</span>: ENUM(<span class="hljs-string">'stripe'</span>, <span class="hljs-string">'paypal'</span>, <span class="hljs-string">'coupon'</span>)
+}
+
+<span class="hljs-comment">// далее где-то в коде сломались тихо</span>
+user.paymentProvider = <span class="hljs-string">'stirpe'</span>;
+
+<span class="hljs-comment">// или сломались явно</span>
+user.paymentProvider = User.PAYMENT_PROVIDER_STIRPE;</code></pre>
+<p>На опечатку в константе будет ругаться компилятор, а на опечатку в волшебной строке — нет, и ошибка вылезет только в рантайме.</p>
+<p>Ну окей, в приведенном примере не все языки ругнутся на этапе валидации синтаксиса, но ошибка все равно поймается раньше, чем будет обращение к базе.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
+  </channel>
+</rss>

@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+s3
+
+web/???/*
+web/index.html
+invalidate.sh

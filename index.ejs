@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <meta name="description" content="Telegram канал с ежедневным советом по программированию — Деды писали код">
+    <meta name="author" content="Егор Егоров">
+
+    <title>Telegram канал с ежедневным советом по программированию — Деды писали код</title>
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/favicon/manifest.json">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="style-v6.css">
+
+    <link rel="alternate" type="application/rss+xml" href="https://deadcode.dev/rss2.xml" />
+  </head>
+  <body>
+    <div class="container-fluid main">
+      <div class="row justify-content-center">
+        <div class="col contentWidth mb-4">
+
+          <div class="media">
+            <img src="favicon/android-icon-192x192.png" class="mr-3 rounded-circle topAvatar" alt="Деды писали код">
+            <div class="media-body">
+              <h3 class="topLink"><a href="/">Деды писали код</a></h3>
+              <div class="topDescription">
+                Каждый день — один совет по программированию в моем личном телеграм-канале <a href="tg://resolve?domain=deadcode0x">@deadcode0x</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="list">
+            <% rootEntries.forEach(function(entry) { %>
+              <div class="entry">
+                <a class="id" href="<%= entry.id %>/">#<%= entry.id %></a> <a class="listLink" href="<%= entry.id %>/"><%= entry.title %></a> <span class="preview"><%= entry.preview %></span>
+              </div>
+            <% }); %>
+          </div>
+
+          <div class="footer">
+            <div class="rss">
+              <a rel="alternate" type="application/rss+xml" href="https://deadcode.dev/rss2.xml" onClick="alert('Не надо кликать на RSS'); return false;"><img src="feed-icon-28x28.png" style="width: 14px; height: 14px;" alt="RSS Icon"> RSS</a>
+            </div>
+            <div class="copyright">
+              &copy;&nbsp;2020 Егор&nbsp;Егоров <a href="mailto:me@egorfine.com">me@egorfine.com</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

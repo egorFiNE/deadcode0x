@@ -1,0 +1,168 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/styles/vs.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.1/styles/androidstudio.min.css') screen and (prefers-color-scheme: dark);
+
+html, body {
+  background-color: white;
+  color: black;
+}
+
+.contentWidth {
+  max-width: 800px;
+}
+.main {
+  margin-top: 30px;
+}
+a {
+  color: #86acd6;
+}
+a.advice {
+  color: #b1b0b0;
+  display: block;
+  margin-bottom: 20px;
+  text-decoration: none;
+}
+h3 a {
+  text-decoration: none;
+}
+h3 a:hover {
+  text-decoration: none;
+}
+
+div.footer {
+  color: #b1b0b0;
+  padding-top: 30px;
+  padding-bottom: 15px;
+}
+div.footer span {
+  font-size: 12px;
+  display: inline-block;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+div.footer .channelLink {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  font-size: 20px;
+}
+
+div.footer .rss {
+  float: right;
+  max-width: 200px;
+  line-height: 23px;
+  vertical-align: middle;
+}
+
+div.footer .rss a {
+  text-decoration: none;
+  display: inline-block;
+}
+
+div.footer .rss img {
+  width: 14px;
+  height: 14px;
+}
+
+div.footer .copyright {
+  float: left;
+}
+
+div.footer .others {
+  padding-top: 0px;
+}
+
+pre {
+  margin-top: 0px;
+}
+
+pre code {
+  padding: 0px;
+}
+
+.hljs {
+  padding: 0px;
+  padding-top: 5px;
+}
+
+div.list {
+  margin-top: 30px;
+}
+
+div.list div.entry {
+  color: #b1b0b0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 10px;
+}
+
+div.list div.entry span.preview {
+  padding-left: 10px;
+  color: #b1b0b0;
+}
+
+div.list div.entry a.id {
+  color: #b1b0b0;
+  text-decoration: none;
+  width: 50px;
+  display: inline-block;
+}
+
+div.list div.entry a.listLink {
+  color: black;
+  text-decoration: underline;
+}
+
+pre.code-padding {
+  margin-left: -30px;
+}
+
+code.code-padding {
+  padding: 20px 0 20px 30px;
+}
+
+div.topLink {
+  margin-top: 0px;
+}
+
+div.topDescription {
+  margin-top: 10px;
+}
+
+img.topAvatar {
+  width: 100px;
+  height: auto;
+}
+
+/* iphone 5 smaller title */
+@media only screen and (min-device-width: 320px) and (max-device-width: 320px) {
+  h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+  img.topAvatar {
+    width: 50px;
+    height: auto;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html, body {
+    background-color: #2e3540;
+    color: #e0e0e0;
+  }
+
+  h3 a {
+    color: #e0e0e0;
+  }
+
+  div.list div.entry a.listLink {
+    color: #e0e0e0;
+  }
+}
+
+blockquote {
+	border-left: solid #ccc 7px;
+	padding-left: 15px;
+}
