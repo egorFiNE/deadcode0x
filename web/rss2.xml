@@ -72,7 +72,7 @@ DeleteFile.NOT_FOUND = <span class="hljs-string">'notFound'</span>;
 <span class="hljs-comment">// But we want to kick in all handlers on first login after plan purchase</span>
 <span class="hljs-comment">// and it is way easier to do that with a boring reload instead of update.</span>
 
-<span class="hljs-keyword">set</span><span class="hljs-title">Timeout</span>(<span class="hljs-params">(</span>) =&gt; <span class="hljs-title">document</span>.<span class="hljs-title">location</span>.<span class="hljs-title">reload</span>(), 1000);</code></pre>
+setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">document</span>.location.reload(), <span class="hljs-number">1000</span>);</code></pre>
 <p>Если бы я не написал этой строчки <code>this.$bus.$emit()</code>, то рано или поздно она была бы кем-то сюда внесена, потому что везде же она есть.</p>
 ]]></description>
       <author>me@egorfine.com (Егор Егоров)</author>
@@ -920,10 +920,10 @@ fflush(LOG_FILE);
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cycle</span>(<span class="hljs-params"></span>) </span>{
   <span class="hljs-keyword">const</span> jobs = <span class="hljs-keyword">await</span> db.getQueue();
   <span class="hljs-keyword">await</span> runJobs(jobs);
-  <span class="hljs-keyword">set</span><span class="hljs-title">Timeout</span>(<span class="hljs-params">cycle, <span class="hljs-number">2000</span></span>);
+  setTimeout(cycle, <span class="hljs-number">2000</span>);
 }
 
-<span class="hljs-title">cycle</span>();</code></pre>
+cycle();</code></pre>
 <p>Плюсы:</p>
 <ul>
 <li>пауза для хранилища</li>
@@ -1101,8 +1101,8 @@ fflush(LOG_FILE);
       <guid isPermaLink="true">https://deadcode.dev/116/</guid>
       <pubDate>Tue, 14 Jan 2020 12:00:00 GMT</pubDate>
       <description><![CDATA[<p>Для простых типов можно указывать результат одним словом:</p>
-<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">get</span><span class="hljs-title">PublishersCount</span>()
-<span class="hljs-title">generateHtmlTemplateString</span>()</code></pre>
+<pre class="code-padding"><code class="hljs code-padding language-javascript">getPublishersCount()
+generateHtmlTemplateString()</code></pre>
 <p>Для более сложных случаев стоит дать название структуре данных, которую возвращает метод или функция. В C/C++ без названия особо-то и не получится, а вот в чистом JS нет механизма определения типов данных. Поэтому я пишу определение структуры в синтаксисе TypeScript, не используя при этом сам TypeScript:</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">/*
 interface JobRecord {
@@ -1113,16 +1113,16 @@ interface JobRecord {
 }
 */</span>
 
-<span class="hljs-keyword">get</span><span class="hljs-title">JobRecordById</span>(<span class="hljs-params">jobId</span>) {
+getJobRecordById(jobId) {
 }
 
-<span class="hljs-keyword">get</span><span class="hljs-title">UserInstance</span>() {
+getUserInstance() {
 }
 
-<span class="hljs-keyword">get</span><span class="hljs-title">StatsByUserIdByDate</span>(<span class="hljs-params">userId</span>) {
+getStatsByUserIdByDate(userId) {
 }</code></pre>
 <p>Можно не описывать тип данных для методов, которые возвращают записи из базы данных — будем считать, что здесь все очевидно:</p>
-<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">get</span><span class="hljs-title">UserRecord</span>() {
+<pre class="code-padding"><code class="hljs code-padding language-javascript">getUserRecord() {
 }</code></pre>
 <p>И еще. Я считаю вредным указывать именно тип данных в названии. Когда метод называется <code>getPublishersCount()</code>, словечко <code>Int</code> в нем не добавит ясности.</p>
 ]]></description>
