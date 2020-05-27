@@ -12,7 +12,26 @@
     <link>https://deadcode.dev/</link>
     <language>ru</language>
     <copyright>2020 Егор Егоров | me@egorfine.com</copyright>
-    <pubDate>Thu, 21 May 2020 08:44:27 GMT</pubDate>
+    <pubDate>Wed, 27 May 2020 07:35:36 GMT</pubDate>
+    <item>
+      <title>Не показывай лоадер сразу</title>
+      <link>https://deadcode.dev/305/</link>
+      <guid isPermaLink="true">https://deadcode.dev/305/</guid>
+      <pubDate>Wed, 27 May 2020 07:35:36 GMT</pubDate>
+      <description><![CDATA[<p>Юзер заполняет форму, кликает submit, форма отправляется на сервер, сервер думает. На время размышлений хочется показать юзеру &quot;форма обрабатывается&quot;. В типичном случае показываем крутящийся лоадер.</p>
+<p>И вот так делать не надо.</p>
+<p>В подавляющем большинстве случаев форма обрабатывается мгновенно (&lt;1s) и лоадер будет лишь только неприятным морганием, особенно если он полноэкранный и закрывает форму. Пользователь не успеет понять, что моргнуло и почему, но у него возникнет ощущение утраты контроля — самое неприятное ощущение, какое только может создать UI.</p>
+<p>Лоадер надо показывать спустя некоторое время после сабмита, если данные не подгрузились.</p>
+<p>Спустя какое? Это можно узнать вот так:</p>
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> startedAt = <span class="hljs-built_in">Date</span>.now();
+<span class="hljs-keyword">await</span> submitAndProcessForm();
+<span class="hljs-keyword">const</span> diffMs = <span class="hljs-built_in">Date</span>.now() - startedAt;
+
+fetch(<span class="hljs-string">'https://my.company/analytics/reportFormTime/?t='</span> + diffMs);</code></pre>
+<p>Или просто выставить его в две секунды.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
     <item>
       <title>Даты обновлений в таблицах</title>
       <link>https://deadcode.dev/303/</link>
