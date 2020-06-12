@@ -12,7 +12,19 @@
     <link>https://deadcode.dev/</link>
     <language>ru</language>
     <copyright>2020 Егор Егоров | me@egorfine.com</copyright>
-    <pubDate>Mon, 08 Jun 2020 10:25:05 GMT</pubDate>
+    <pubDate>Fri, 12 Jun 2020 07:43:26 GMT</pubDate>
+    <item>
+      <title>Fallback в коде: что, если не получилось?</title>
+      <link>https://deadcode.dev/313/</link>
+      <guid isPermaLink="true">https://deadcode.dev/313/</guid>
+      <pubDate>Fri, 12 Jun 2020 07:43:26 GMT</pubDate>
+      <description><![CDATA[<p>Если в коде что-то не получилось (нет ответа от базы, API недоступен, платеж не прошел и т.д.) то важно предусмотреть правильное <em>конструктивное</em> поведение.</p>
+<p>Пример из жизни (слегка упрощенный, конечно). Приложение при запуске делает запрос домой и спрашивает, оплатил ли пользователь подписку на ZZZ. Что делать приложению, если не удалось достучаться к серверам, или ответ некорректен? Скажем, прошло десять лет, компания закрылась, а домен ушел к порносайту.</p>
+<p>Давать доступ к ZZZ.</p>
+<p>Потому что <em>не давать</em> было бы деструктивным действием — у пользователя бы пропала важная для бизнеса функция и он бы страдал по нашей вине.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
     <item>
       <title>Exceptions — зло</title>
       <link>https://deadcode.dev/309/</link>
