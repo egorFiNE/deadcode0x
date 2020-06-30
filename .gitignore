@@ -109,3 +109,4 @@ web/???/*
 web/index.html
 invalidate.*
 trim.*
+*.sh
