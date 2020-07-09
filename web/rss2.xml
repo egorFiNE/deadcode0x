@@ -12,7 +12,18 @@
     <link>https://deadcode.dev/</link>
     <language>ru</language>
     <copyright>2020 Егор Егоров | me@egorfine.com</copyright>
-    <pubDate>Tue, 30 Jun 2020 07:27:46 GMT</pubDate>
+    <pubDate>Thu, 09 Jul 2020 11:02:20 GMT</pubDate>
+    <item>
+      <title>Монетарные значения должны быть целочисленными</title>
+      <link>https://deadcode.dev/323/</link>
+      <guid isPermaLink="true">https://deadcode.dev/323/</guid>
+      <pubDate>Thu, 09 Jul 2020 11:02:20 GMT</pubDate>
+      <description><![CDATA[<p>Как известно, <a href="https://en.wikipedia.org/wiki/Floating-point_arithmetic">0.2 + 0.1 = 0.30000000000000004</a>. Казалось бы, можно округлить да и дело с концом. Но нет: НДС от суммы в счете и сумма НДСов счета запросто могут отличаться за счет ошибок округления.</p>
+<p>Поэтому все денежные единицы стоит хранить и исчислять в целом количестве копеек и конвертировать в дробные доллары только на этапе показа пользователю. В базах это <code>BIGINT</code>. В js я делаю просто <code>const amountHr = Math.floor(amount/100).toFixed(2)</code>.</p>
+<p>С <a href="https://en.wikipedia.org/wiki/Bitcoin#Units_and_divisibility">Satoshi</a> посложнее, конечно.</p>
+]]></description>
+      <author>me@egorfine.com (Егор Егоров)</author>
+    </item>
     <item>
       <title>Плавно вводи ресурсы в эксплуатацию</title>
       <link>https://deadcode.dev/320/</link>
