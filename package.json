@@ -9,7 +9,7 @@
   "dependencies": {
     "aws-sdk": "^2.664.0",
     "ejs": "^3.1.2",
-    "highlight.js": "^10.0.1",
+    "highlight.js": "^10.1.2",
     "marked": "^1.0.0",
     "sharp": "^0.25.2",
     "xml-js": "^1.6.11"
