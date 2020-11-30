@@ -19,10 +19,10 @@
       <guid isPermaLink="true">https://deadcode.dev/330/</guid>
       <pubDate>Thu, 23 Jul 2020 10:03:30 GMT</pubDate>
       <description><![CDATA[<p>Одна из самых лучших вещей, появившихся в JavaScript за последние годы — это возможность использовать <a href="https://www.google.com/search?q=javascript+destructuring">destructuring</a> прямо в определении функции. Выглядит это так:</p>
-<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">deleteUser</span>(<span class="hljs-params">{ userId, shouldKeepData = false, dir = <span class="hljs-string">'/tmp/'</span> } = {}</span>) </span>{
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">deleteUser</span>(<span class="hljs-params">{ userId, shouldKeepData = <span class="hljs-literal">false</span>, dir = <span class="hljs-string">&#x27;/tmp/&#x27;</span> } = {}</span>) </span>{
   <span class="hljs-built_in">console</span>.log(
-    <span class="hljs-string">"Will delete user %d %s"</span>,
-    userId, shouldKeepData ? <span class="hljs-string">""</span> : <span class="hljs-string">"with data"</span>
+    <span class="hljs-string">&quot;Will delete user %d %s&quot;</span>,
+    userId, shouldKeepData ? <span class="hljs-string">&quot;&quot;</span> : <span class="hljs-string">&quot;with data&quot;</span>
   );
 
   <span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> findUserById(userId);
@@ -36,7 +36,7 @@
 deleteUser({
   userId,
   <span class="hljs-attr">shouldKeepData</span>: <span class="hljs-literal">true</span>,
-  <span class="hljs-attr">dir</span>: <span class="hljs-string">'/var/data/shelf/'</span>
+  <span class="hljs-attr">dir</span>: <span class="hljs-string">&#x27;/var/data/shelf/&#x27;</span>
 });</code></pre>
 <p>Обрати внимание:</p>
 <ul>
@@ -137,7 +137,7 @@ deleteUser({
 <span class="hljs-keyword">await</span> submitAndProcessForm();
 <span class="hljs-keyword">const</span> diffMs = <span class="hljs-built_in">Date</span>.now() - startedAt;
 
-fetch(<span class="hljs-string">'https://my.company/analytics/reportFormTime/?t='</span> + diffMs);</code></pre>
+fetch(<span class="hljs-string">&#x27;https://my.company/analytics/reportFormTime/?t=&#x27;</span> + diffMs);</code></pre>
 <p>Или просто выставить его в две секунды.</p>
 ]]></description>
       <author>me@egorfine.com (Егор Егоров)</author>
@@ -160,7 +160,7 @@ fetch(<span class="hljs-string">'https://my.company/analytics/reportFormTime/?t=
       <guid isPermaLink="true">https://deadcode.dev/302/</guid>
       <pubDate>Wed, 20 May 2020 11:27:20 GMT</pubDate>
       <description><![CDATA[<pre class="code-padding"><code class="hljs code-padding language-c"><span class="hljs-keyword">if</span> (stat(filename) == <span class="hljs-number">-1</span>) {
-  <span class="hljs-comment">// file doesn't exist</span>
+  <span class="hljs-comment">// file doesn&#x27;t exist</span>
 }</code></pre>
 <p>Такой код прижился только в C, и только там он является общепринятым и понятным.</p>
 <p>В скриптовых языках программирования не следует возвращать -1 как признак (не)успешного выполнения функции, а в JS осторожно нужно быть и со всякими null/undefined. Вообще, канонически правильного способа вернуть ошибку толком-то и нет; сишный <code>errno</code> — это страшный костыль, за который потомки до сих пор благодарны нам. Сишный же способ передать указатель на переменную тоже не самое элегантное решение, и имеет право на жизнь только там, где все программисты этот паттерн знают и хорошо к нему привыкли.</p>
@@ -181,14 +181,14 @@ fetch(<span class="hljs-string">'https://my.company/analytics/reportFormTime/?t=
 </ul>
 <p>Еще можно делать так:</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">DeleteFile</span> </span>{
-  <span class="hljs-keyword">static</span> perform(path) {
+  <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">perform</span>(<span class="hljs-params">path</span>)</span> {
     <span class="hljs-comment">// ...</span>
     <span class="hljs-keyword">return</span> DeleteFile.SUCCESS;
   }
 }
 
-DeleteFile.SUCCESS = <span class="hljs-string">'success'</span>;
-DeleteFile.NOT_FOUND = <span class="hljs-string">'notFound'</span>;
+DeleteFile.SUCCESS = <span class="hljs-string">&#x27;success&#x27;</span>;
+DeleteFile.NOT_FOUND = <span class="hljs-string">&#x27;notFound&#x27;</span>;
 
 <span class="hljs-comment">// ...</span>
 
@@ -205,15 +205,15 @@ DeleteFile.NOT_FOUND = <span class="hljs-string">'notFound'</span>;
       <pubDate>Wed, 13 May 2020 08:06:06 GMT</pubDate>
       <description><![CDATA[<p>Иногда можно писать код, который никогда не будет исполняться, но который очень важно чтобы никто другой не написал.</p>
 <p>Например, у меня есть разветвистый <code>if .. else if .. else if ..</code>. В конце каждой ветки стоит почти одинаковый вызов. И вот в одной из веток его нет, а логика очень похожа. И чтобы мой коллега как-нибудь не заметил эту <em>очевидную</em> проблему и не скопировал туда строчку — это сделал я сам:</p>
-<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">this</span>.$notify.success(<span class="hljs-string">'Advanced Trial started'</span>);
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-built_in">this</span>.$notify.success(<span class="hljs-string">&#x27;Advanced Trial started&#x27;</span>);
 
-<span class="hljs-comment">// this.$bus.$emit('UPDATE_ROOT_USER'); // &lt;-- код не для компьютера!</span>
+<span class="hljs-comment">// this.$bus.$emit(&#x27;UPDATE_ROOT_USER&#x27;); // &lt;-- код не для компьютера!</span>
 
 <span class="hljs-comment">// Normally we would update root user and the interface will re-render.</span>
 <span class="hljs-comment">// But we want to kick in all handlers on first login after plan purchase</span>
 <span class="hljs-comment">// and it is way easier to do that with a boring reload instead of update.</span>
 
-setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">document</span>.location.reload(), <span class="hljs-number">1000</span>);</code></pre>
+<span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> <span class="hljs-built_in">document</span>.location.reload(), <span class="hljs-number">1000</span>);</code></pre>
 <p>Если бы я не написал этой строчки <code>this.$bus.$emit()</code>, то рано или поздно она была бы кем-то сюда внесена, потому что везде же она есть.</p>
 ]]></description>
       <author>me@egorfine.com (Егор Егоров)</author>
@@ -296,11 +296,11 @@ setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;
 <p>На помощь приходит <code>SELECT ... FOR UPDATE</code>:</p>
 <pre class="code-padding"><code class="hljs code-padding language-sql"><span class="hljs-keyword">BEGIN</span>;
 <span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> Queue 
-  <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">'new'</span> 
+  <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">&#x27;new&#x27;</span> 
   <span class="hljs-keyword">LIMIT</span> <span class="hljs-number">1</span> 
   <span class="hljs-keyword">FOR</span> <span class="hljs-keyword">UPDATE</span>;
 <span class="hljs-keyword">UPDATE</span> Queue 
-  <span class="hljs-keyword">SET</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">'in progress'</span> 
+  <span class="hljs-keyword">SET</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">&#x27;in progress&#x27;</span> 
   <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span> = xxx;
 <span class="hljs-keyword">COMMIT</span>;</code></pre>
 <p>Как только SQL сервер получает запрос на выборку <code>FOR UPDATE</code>, он никому другому больше не отдаст эту запись, пока ты не закроешь транзакцию.</p>
@@ -418,10 +418,10 @@ ProductImage это на самом деле скрипт
       <pubDate>Fri, 06 Mar 2020 08:46:56 GMT</pubDate>
       <description><![CDATA[<p>Пример из реального проекта:</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript">res.set({
-    <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'text/plain'</span>,
-    <span class="hljs-string">'Cache-Control'</span>: <span class="hljs-string">'public'</span>,
-    <span class="hljs-string">"Content-Length"</span>: <span class="hljs-number">0</span>,
-    <span class="hljs-attr">Location</span>: <span class="hljs-string">'/'</span>
+    <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;text/plain&#x27;</span>,
+    <span class="hljs-string">&#x27;Cache-Control&#x27;</span>: <span class="hljs-string">&#x27;public&#x27;</span>,
+    <span class="hljs-string">&quot;Content-Length&quot;</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-attr">Location</span>: <span class="hljs-string">&#x27;/&#x27;</span>
 });</code></pre>
 <p>Обрати внимание на три разных способа обратиться к ключу хеша: через одинарные кавычки, через двойные кавычки и без кавычек вообще. Это ужасно некрасиво, не надо так. В случае HTTP-заголовков их все стоит писать в одинарных кавычках, потому что минус не может быть частью литерала в JavaScript.</p>
 <p>Адвокат: &quot;Но он же <a href="https://deadcode.dev/151/">передает Content-Length</a>!&quot; <br>
@@ -497,7 +497,7 @@ ProductImage это на самом деле скрипт
 <p>Эти знания очень ценны, сохрани их. Просто напиши прямо здесь и сейчас, как есть. Как можно проще и быстрее, неважно в какой строке и в каком формате. Самое главное — выгрузи знания, а уже переписывать будешь потом, если вообще захочешь.</p>
 <p>Не бывает слишком много комментариев в коде.</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// no need to sign pdf url</span>
-<span class="hljs-comment">// as we don't let users download it</span>
+<span class="hljs-comment">// as we don&#x27;t let users download it</span>
 
 <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">signUrls</span>(<span class="hljs-params">{ s3, expirationSeconds = <span class="hljs-number">3600</span>, fileHelper }</span>) </span>{ }</code></pre>
 ]]></description>
@@ -557,7 +557,7 @@ ProductImage это на самом деле скрипт
 <span class="hljs-keyword">const</span> idByEmail = {};
 <span class="hljs-keyword">const</span> ids = [];
 <span class="hljs-keyword">const</span> emails = [];
-<span class="hljs-comment">// здесь мы запрашиваем "SELECT id, email FROM Users"</span>
+<span class="hljs-comment">// здесь мы запрашиваем &quot;SELECT id, email FROM Users&quot;</span>
 <span class="hljs-comment">// и строим два индекса и два массива</span>
 <span class="hljs-comment">// вместо одной линейной структуры</span></code></pre>
 <p>Скажешь, это расходует память? Конечно. А действительно ли у тебя столько данных в этом участке кода, что это важно? А что дороже — твое время или RAM? Ответы на оба вопроса, кстати, не всегда понятны. А об экономике оптимизации мы еще поговорим чуть позже.</p>
@@ -588,7 +588,7 @@ ProductImage это на самом деле скрипт
 <p>Как я валидирую емейл на фронтенде: есть <code>@</code>, есть точка, длина не менее 5 символов. Почему 5? Потому что это единственное число, которое я могу обосновать. Емейл <code>a@a.a</code> — валидный, и никто не говорил, что любой из компонентов должен быть длиннее одного символа. Это всё! Как только ты начинаешь сюда добавлять другие правила, ты попадаешь в трясину, из которой тебя уже никто не вытащит. Хочешь по-настоящему заглянуть в бездну и валидировать емейл — открывай <a href="https://tools.ietf.org/html/rfc822">RFC 822</a> и прощай, милый друг.</p>
 <p>Как я валидирую емейл на беке: беру самый мейнстримный пакет и доверяю ему. Пусть весь мир парится над этой задачей, а кто-то другой за нее отвечает.</p>
 <p>Как я связываю эти два метода:</p>
-<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> email = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">'#email'</span>).value.trim().toLowerCase();
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> email = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&#x27;#email&#x27;</span>).value.trim().toLowerCase();
 <span class="hljs-comment">// локальная валидация: есть точка, есть @, длина</span>
 <span class="hljs-keyword">if</span> (!isValid(email)) {
   showMessageEmailInvalid();
@@ -597,7 +597,7 @@ ProductImage это на самом деле скрипт
 
 <span class="hljs-comment">// пробуем регистрировать юзера</span>
 <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> httpPostRegisterUser({ email });
-<span class="hljs-keyword">if</span> (result.success == <span class="hljs-literal">false</span> &amp;&amp; result.error == <span class="hljs-string">'email'</span>) {
+<span class="hljs-keyword">if</span> (result.success == <span class="hljs-literal">false</span> &amp;&amp; result.error == <span class="hljs-string">&#x27;email&#x27;</span>) {
   <span class="hljs-comment">// не прошла расширенная валидация на беке</span>
   showMessageEmailInvalid();
   <span class="hljs-keyword">return</span>;
@@ -613,15 +613,15 @@ ProductImage это на самом деле скрипт
       <description><![CDATA[<p>Классический сервис: восстановление пароля. Классическое решение: создаем ссылку с уникальным токеном, отправляем письмо. Юзер переходит, мы находим токен в базе, разрешаем поменять пароль. Минусы: мы должны хранить токены вместе со всей обвязкой: база, ORM, репликации, и так далее.</p>
 <p>Более элегантное решение:</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">generateLink</span>(<span class="hljs-params">email</span>) </span>{
-  <span class="hljs-keyword">let</span> token = HMAC_SHA256(email + <span class="hljs-string">'|'</span> + expirationUnixtime, secret);
-  <span class="hljs-keyword">let</span> link = <span class="hljs-string">'https://example.com/recover/?t='</span> + token;
-  link += <span class="hljs-string">'&amp;email='</span> + email;
-  link += <span class="hljs-string">'&amp;sex='</span> + expirationUnixtime;
+  <span class="hljs-keyword">let</span> token = HMAC_SHA256(email + <span class="hljs-string">&#x27;|&#x27;</span> + expirationUnixtime, secret);
+  <span class="hljs-keyword">let</span> link = <span class="hljs-string">&#x27;https://example.com/recover/?t=&#x27;</span> + token;
+  link += <span class="hljs-string">&#x27;&amp;email=&#x27;</span> + email;
+  link += <span class="hljs-string">&#x27;&amp;sex=&#x27;</span> + expirationUnixtime;
   <span class="hljs-keyword">return</span> link;
 }
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">verify</span>(<span class="hljs-params">token, email, expirationUnixtime</span>) </span>{
-  <span class="hljs-keyword">let</span> correctToken = HMAC_SHA256(email + <span class="hljs-string">'|'</span> + expirationUnixtime, secret);
+  <span class="hljs-keyword">let</span> correctToken = HMAC_SHA256(email + <span class="hljs-string">&#x27;|&#x27;</span> + expirationUnixtime, secret);
   <span class="hljs-keyword">if</span> (correctToken == token) {
     <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
   }
@@ -640,14 +640,14 @@ ProductImage это на самом деле скрипт
       <guid isPermaLink="true">https://deadcode.dev/186/</guid>
       <pubDate>Fri, 14 Feb 2020 12:00:00 GMT</pubDate>
       <description><![CDATA[<p>Транзакции с базой данных нужно открывать и закрывать как можно быстрее. Внутри транзакции категорически нельзя делать никакого ввода-вывода: ни записи/чтения файла, ни, упаси Боже, ответа веб-сервера.</p>
-<pre class="code-padding"><code class="hljs code-padding language-javascript">db.query(<span class="hljs-string">'BEGIN'</span>);
-db.query(<span class="hljs-string">'UPDATE Videos SET viewsCount = viewsCount+1 WHERE videoId=14'</span>);
-<span class="hljs-keyword">const</span> count = db.query(<span class="hljs-string">'SELECT viewsCount FROM Videos WHERE videoId=14'</span>);
+<pre class="code-padding"><code class="hljs code-padding language-javascript">db.query(<span class="hljs-string">&#x27;BEGIN&#x27;</span>);
+db.query(<span class="hljs-string">&#x27;UPDATE Videos SET viewsCount = viewsCount+1 WHERE videoId=14&#x27;</span>);
+<span class="hljs-keyword">const</span> count = db.query(<span class="hljs-string">&#x27;SELECT viewsCount FROM Videos WHERE videoId=14&#x27;</span>);
 res.send({
   videoId,
   count
 });
-db.query(<span class="hljs-string">'COMMIT'</span>);</code></pre>
+db.query(<span class="hljs-string">&#x27;COMMIT&#x27;</span>);</code></pre>
 <p>Вот так делать нельзя! Пока думает сетевой код, табличка или запись или страница в базе остаются залочены. Такой код будет сильно тормозить сервис.</p>
 <p>Все данные перед транзакцией нужно приготовить, а все результаты из транзакции собрать в память. И сразу выйти.</p>
 <p>Скажешь, очевидно? Конечно. За январь я выловил три таких случая в коде, а год назад ровно на обнаружении этой проблемы мне удалось сократить затраты на базу с $600 до $138 в месяц.</p>
@@ -690,7 +690,7 @@ db.query(<span class="hljs-string">'COMMIT'</span>);</code></pre>
 }
 
 <span class="hljs-keyword">if</span> (failedFlag) {
-  <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">"At least one file failed, exit\n"</span>);
+  <span class="hljs-built_in">fprintf</span>(<span class="hljs-built_in">stderr</span>, <span class="hljs-string">&quot;At least one file failed, exit\n&quot;</span>);
   <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);
 }</code></pre>
 <p>Спрашиваешь, мол, ну что это за совет? А ты попробуй жестко придерживаться этого правила. Просто доверься мне и попробуй.</p>
@@ -738,7 +738,7 @@ db.query(<span class="hljs-string">'COMMIT'</span>);</code></pre>
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">findSponsorByCookieValue</span>(<span class="hljs-params">db, affiliateCookieValue</span>) </span>{
   <span class="hljs-keyword">if</span> (affiliateCookieValue) {
-    <span class="hljs-keyword">const</span> splitValue = affiliateCookieValue.split(<span class="hljs-string">'.'</span>);
+    <span class="hljs-keyword">const</span> splitValue = affiliateCookieValue.split(<span class="hljs-string">&#x27;.&#x27;</span>);
 
     <span class="hljs-keyword">if</span> (splitValue.length == <span class="hljs-number">2</span>) {
       <span class="hljs-keyword">const</span> userId = splitValue[<span class="hljs-number">0</span>];
@@ -770,7 +770,7 @@ db.query(<span class="hljs-string">'COMMIT'</span>);</code></pre>
     <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
   }
 
-  <span class="hljs-keyword">const</span> splitValue = affiliateCookieValue.split(<span class="hljs-string">'.'</span>);
+  <span class="hljs-keyword">const</span> splitValue = affiliateCookieValue.split(<span class="hljs-string">&#x27;.&#x27;</span>);
   <span class="hljs-keyword">if</span> (splitValue.length != <span class="hljs-number">2</span>) {
     <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
   }
@@ -878,7 +878,7 @@ users.forEach(<span class="hljs-function"><span class="hljs-params">user</span> 
   users[id] = user;
 }
 
-fs.writeFileSync(<span class="hljs-string">'users.json'</span>, <span class="hljs-built_in">JSON</span>.stringify(users));
+fs.writeFileSync(<span class="hljs-string">&#x27;users.json&#x27;</span>, <span class="hljs-built_in">JSON</span>.stringify(users));
 
 <span class="hljs-comment">// Стало, например:</span>
 
@@ -894,14 +894,14 @@ fs.writeFileSync(<span class="hljs-string">'users.json'</span>, <span class="hlj
 <pre class="code-padding"><code class="hljs code-padding language-c"><span class="hljs-comment">// Было</span>
 
 <span class="hljs-keyword">char</span> *line = <span class="hljs-built_in">malloc</span>(<span class="hljs-number">1024</span>); <span class="hljs-comment">// так нельзя, конечно, но пост не об этом</span>
-<span class="hljs-built_in">sprintf</span>(line, <span class="hljs-string">"%s %s %s\n"</span>, dateString, subsystem_name, formattedLine);
+<span class="hljs-built_in">sprintf</span>(line, <span class="hljs-string">&quot;%s %s %s\n&quot;</span>, dateString, subsystem_name, formattedLine);
 <span class="hljs-built_in">fputs</span>(line, LOG_FILE);
 fflush(LOG_FILE);
 <span class="hljs-built_in">free</span>(line);
 
 <span class="hljs-comment">// Стало</span>
 
-<span class="hljs-built_in">log</span>(subsystem_name, <span class="hljs-string">"%s failed to join record"</span>, tableName);</code></pre>
+<span class="hljs-built_in">log</span>(subsystem_name, <span class="hljs-string">&quot;%s failed to join record&quot;</span>, tableName);</code></pre>
 <p>Ты возразишь: я пользуюсь ORM, у меня это само собой.</p>
 <p>Но нет. Для тебя ORM — это просто такое высокоуровневое хранилище. Скажем, если у тебя записи о пользователях и платежах раскиданы по разным моделям, то все равно где-то есть код, создающий нового пользователя. И там тебе нужно: создать пользователя, создать подписку в записи историй, присвоить пользователю доступ к платным фичам, а еще и провести платеж по финансовым табличкам. Все это вместе назови <code>createPaidUser()</code> в новой модели <code>PaymentController</code>.</p>
 ]]></description>
@@ -991,7 +991,7 @@ fflush(LOG_FILE);
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">save</span>(<span class="hljs-params">filename, data</span>) </span>{
   <span class="hljs-comment">// придумай временное имя</span>
-  <span class="hljs-keyword">const</span> tmpFilename = filename + <span class="hljs-string">'.tmp'</span>;
+  <span class="hljs-keyword">const</span> tmpFilename = filename + <span class="hljs-string">&#x27;.tmp&#x27;</span>;
 
   <span class="hljs-comment">// если рядом кто-то уже пишет во временный файл —</span>
   <span class="hljs-comment">// это означает что он точно закончит запись</span>
@@ -1024,9 +1024,9 @@ fflush(LOG_FILE);
       <pubDate>Tue, 28 Jan 2020 12:00:00 GMT</pubDate>
       <description><![CDATA[<p>Не стесняйся создавать отдельный класс для каждой маленькой сущности, если у нее есть <strong>понятное имя</strong> и метод. Не страшно, когда в коде много классов. Страшно, когда в коде много <strong>непонятных</strong> классов или когда трудно искать код.</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LegacyLoginConnector</span> </span>{
-  <span class="hljs-keyword">static</span> verify(login, password) {
+  <span class="hljs-keyword">static</span> <span class="hljs-function"><span class="hljs-title">verify</span>(<span class="hljs-params">login, password</span>)</span> {
     <span class="hljs-keyword">const</span> body = http.post(
-      <span class="hljs-string">'http://legacy.example.com/checkLogin/'</span>, 
+      <span class="hljs-string">&#x27;http://legacy.example.com/checkLogin/&#x27;</span>, 
       { login, password }
     );
     <span class="hljs-keyword">return</span> (body &amp;&amp; body.success == <span class="hljs-literal">true</span>);
@@ -1062,7 +1062,7 @@ fflush(LOG_FILE);
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">cycle</span>(<span class="hljs-params"></span>) </span>{
   <span class="hljs-keyword">const</span> jobs = <span class="hljs-keyword">await</span> db.getQueue();
   <span class="hljs-keyword">await</span> runJobs(jobs);
-  setTimeout(cycle, <span class="hljs-number">2000</span>);
+  <span class="hljs-built_in">setTimeout</span>(cycle, <span class="hljs-number">2000</span>);
 }
 
 cycle();</code></pre>
@@ -1110,27 +1110,27 @@ cycle();</code></pre>
 <p>Причем красота — это не навернуть в одну строку <code>.map().filter().reduce()</code>, а красота — это то, что облегчает ментальную нагрузку при работе с кодом.</p>
 <p>Сравни три варианта обработчика ошибок. Какой проще читается?</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, source, lineno, colno, error</span>) </span>{
-  <span class="hljs-keyword">return</span> (message || <span class="hljs-string">'(none)'</span>) + <span class="hljs-string">' '</span> +
-    (source || <span class="hljs-string">'(none)'</span>) + <span class="hljs-string">':'</span> (lineno || <span class="hljs-string">'(none)'</span>) + <span class="hljs-string">':'</span> (colno || <span class="hljs-string">'(none)'</span>);
+  <span class="hljs-keyword">return</span> (message || <span class="hljs-string">&#x27;(none)&#x27;</span>) + <span class="hljs-string">&#x27; &#x27;</span> +
+    (source || <span class="hljs-string">&#x27;(none)&#x27;</span>) + <span class="hljs-string">&#x27;:&#x27;</span> (lineno || <span class="hljs-string">&#x27;(none)&#x27;</span>) + <span class="hljs-string">&#x27;:&#x27;</span> (colno || <span class="hljs-string">&#x27;(none)&#x27;</span>);
 }
 
 
 <span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, source, lineno, colno, error</span>) </span>{
-  <span class="hljs-keyword">const</span> NONE = <span class="hljs-string">'(none)'</span>;
+  <span class="hljs-keyword">const</span> NONE = <span class="hljs-string">&#x27;(none)&#x27;</span>;
 
-  <span class="hljs-keyword">const</span> line = (message || NONE) + <span class="hljs-string">' '</span> +
-    (source || NONE) + <span class="hljs-string">':'</span> (lineno || NONE) + <span class="hljs-string">':'</span> (colno || NONE);
+  <span class="hljs-keyword">const</span> line = (message || NONE) + <span class="hljs-string">&#x27; &#x27;</span> +
+    (source || NONE) + <span class="hljs-string">&#x27;:&#x27;</span> (lineno || NONE) + <span class="hljs-string">&#x27;:&#x27;</span> (colno || NONE);
 
   <span class="hljs-keyword">return</span> line;
 }
 
 
 <span class="hljs-built_in">window</span>.onerror = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, source, lineno, colno, error</span>) </span>{
-  <span class="hljs-keyword">const</span> NONE = <span class="hljs-string">'(none)'</span>;
+  <span class="hljs-keyword">const</span> NONE = <span class="hljs-string">&#x27;(none)&#x27;</span>;
 
-  <span class="hljs-keyword">const</span> location = (source || NONE) + <span class="hljs-string">':'</span> (lineno || NONE) + <span class="hljs-string">':'</span> (colno || NONE);
+  <span class="hljs-keyword">const</span> location = (source || NONE) + <span class="hljs-string">&#x27;:&#x27;</span> (lineno || NONE) + <span class="hljs-string">&#x27;:&#x27;</span> (colno || NONE);
 
-  <span class="hljs-keyword">return</span> (message || NONE) + <span class="hljs-string">' '</span> + location;
+  <span class="hljs-keyword">return</span> (message || NONE) + <span class="hljs-string">&#x27; &#x27;</span> + location;
 }</code></pre>
 ]]></description>
       <author>me@egorfine.com (Егор Егоров)</author>
@@ -1160,7 +1160,7 @@ cycle();</code></pre>
   }
 }</code></pre>
 <p>Можешь с утра выставить переменную окружения <code>PASSWORD_SKIP</code> в нужное значение и приступить к работе.</p>
-<pre class="code-padding"><code class="hljs code-padding language-bash"><span class="hljs-built_in">echo</span> -n  <span class="hljs-string">"2019-01-21"</span><span class="hljs-string">"localhost"</span><span class="hljs-string">"sirko"</span> | md5sum -</code></pre>
+<pre class="code-padding"><code class="hljs code-padding language-bash"><span class="hljs-built_in">echo</span> -n  <span class="hljs-string">&quot;2019-01-21&quot;</span><span class="hljs-string">&quot;localhost&quot;</span><span class="hljs-string">&quot;sirko&quot;</span> | md5sum -</code></pre>
 <p>В продакшн такая переменная никогда не попадет, а если и попадет, то никогда не примет нужное значение.</p>
 <p>Важный момент #0: нельзя просто проверять <code>if (env.PASSWORD_SKIP)</code>, потому что так ты проверяешь просто наличие переменной окружения. Вероятность того, что она появится в продакшне — мизерная, но не нулевая. Вероятность, что она совпадет с контрольной суммой от дня и имени базы — ноль.</p>
 <p>Важный момент #1: вычислять ее значение нужно обязательно вручную. Как только ты засунул это в скрипт - он рано или поздно запустится в продакшне.</p>
@@ -1255,16 +1255,16 @@ interface JobRecord {
 }
 */</span>
 
-getJobRecordById(jobId) {
+<span class="hljs-function"><span class="hljs-title">getJobRecordById</span>(<span class="hljs-params">jobId</span>)</span> {
 }
 
-getUserInstance() {
+<span class="hljs-function"><span class="hljs-title">getUserInstance</span>(<span class="hljs-params"></span>)</span> {
 }
 
-getStatsByUserIdByDate(userId) {
+<span class="hljs-function"><span class="hljs-title">getStatsByUserIdByDate</span>(<span class="hljs-params">userId</span>)</span> {
 }</code></pre>
 <p>Можно не описывать тип данных для методов, которые возвращают записи из базы данных — будем считать, что здесь все очевидно:</p>
-<pre class="code-padding"><code class="hljs code-padding language-javascript">getUserRecord() {
+<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-function"><span class="hljs-title">getUserRecord</span>(<span class="hljs-params"></span>)</span> {
 }</code></pre>
 <p>И еще. Я считаю вредным указывать именно тип данных в названии. Когда метод называется <code>getPublishersCount()</code>, словечко <code>Int</code> в нем не добавит ясности.</p>
 ]]></description>
@@ -1277,8 +1277,8 @@ getStatsByUserIdByDate(userId) {
       <pubDate>Sun, 12 Jan 2020 12:00:00 GMT</pubDate>
       <description><![CDATA[<p>Так можно с первого взгляда определить, кому адресована строка в коде. Вот пример, где в интерфейс беком передается информация о платеже. Представим себе, что интерфейс умеет показывать название платежной системы красивым шрифтом. Тут сразу прозрачно понятно, какая строка сформирована для человека, а какая — для кода UI. (Конечно, постфикс &quot;Label&quot; тоже помогает).</p>
 <pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-keyword">const</span> result = {
-  <span class="hljs-attr">paymentSystem</span>: <span class="hljs-string">'stripe'</span>,
-  <span class="hljs-attr">paymentSystemLabel</span>: <span class="hljs-string">"stripe"</span>
+  <span class="hljs-attr">paymentSystem</span>: <span class="hljs-string">&#x27;stripe&#x27;</span>,
+  <span class="hljs-attr">paymentSystemLabel</span>: <span class="hljs-string">&quot;stripe&quot;</span>
 }</code></pre>
 ]]></description>
       <author>me@egorfine.com (Егор Егоров)</author>
@@ -1306,11 +1306,11 @@ getStatsByUserIdByDate(userId) {
       <pubDate>Sun, 12 Jan 2020 12:00:00 GMT</pubDate>
       <description><![CDATA[<pre class="code-padding"><code class="hljs code-padding language-javascript"><span class="hljs-comment">// определяем модель данных</span>
 <span class="hljs-attr">paymentProvider</span>: {
-  <span class="hljs-attr">type</span>: ENUM(<span class="hljs-string">'stripe'</span>, <span class="hljs-string">'paypal'</span>, <span class="hljs-string">'coupon'</span>)
+  <span class="hljs-attr">type</span>: ENUM(<span class="hljs-string">&#x27;stripe&#x27;</span>, <span class="hljs-string">&#x27;paypal&#x27;</span>, <span class="hljs-string">&#x27;coupon&#x27;</span>)
 }
 
 <span class="hljs-comment">// далее где-то в коде сломались тихо</span>
-user.paymentProvider = <span class="hljs-string">'stirpe'</span>;
+user.paymentProvider = <span class="hljs-string">&#x27;stirpe&#x27;</span>;
 
 <span class="hljs-comment">// или сломались явно</span>
 user.paymentProvider = User.PAYMENT_PROVIDER_STIRPE;</code></pre>
