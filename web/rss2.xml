@@ -273,8 +273,8 @@ DeleteFile.NOT_FOUND = <span class="hljs-string">&#x27;notFound&#x27;</span>;
 <p>Это должен быть отдельный http сервер (или отдельный .php), со своим конфигом, <strong>не использующий общий код проекта.</strong> Все, что должен делать этот скрипт — записать сырые данные платежного уведомления в базу и сказать HTTP 200 OK. <strong>И все,</strong> и ни в коем случае ничего больше! </p>
 <p>Структура таблички должна быть примерно такой: </p>
 <pre class="code-padding"><code class="hljs code-padding language-sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">TABLE</span> IPN (
-    <span class="hljs-keyword">data</span> <span class="hljs-built_in">TEXT</span>,
-    isProcessed <span class="hljs-built_in">TINYINT</span>(<span class="hljs-number">1</span>) <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>
+    data TEXT,
+    isProcessed TINYINT(<span class="hljs-number">1</span>) <span class="hljs-keyword">DEFAULT</span> <span class="hljs-number">0</span>
 );</code></pre>
 <p>(<code>createdAt</code> и <code>NOT NULL</code> добавь по вкусу)</p>
 <p>Цель простая: как можно атомарнее и проще <strong>принять</strong> уведомление, надежно его записать и подтвердить платежке. Вокруг платежа может быть очень много разной логики, и она может ломаться в самых разных местах. Не надо так! Прими уведомление, потом разбирайся. </p>
@@ -295,13 +295,13 @@ DeleteFile.NOT_FOUND = <span class="hljs-string">&#x27;notFound&#x27;</span>;
 <p>Как сделать так, чтобы одну задачу забирал только один сервер?</p>
 <p>На помощь приходит <code>SELECT ... FOR UPDATE</code>:</p>
 <pre class="code-padding"><code class="hljs code-padding language-sql"><span class="hljs-keyword">BEGIN</span>;
-<span class="hljs-keyword">SELECT</span> * <span class="hljs-keyword">FROM</span> Queue 
-  <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">&#x27;new&#x27;</span> 
-  <span class="hljs-keyword">LIMIT</span> <span class="hljs-number">1</span> 
+<span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> Queue 
+  <span class="hljs-keyword">WHERE</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;new&#x27;</span> 
+  LIMIT <span class="hljs-number">1</span> 
   <span class="hljs-keyword">FOR</span> <span class="hljs-keyword">UPDATE</span>;
 <span class="hljs-keyword">UPDATE</span> Queue 
-  <span class="hljs-keyword">SET</span> <span class="hljs-keyword">status</span> = <span class="hljs-string">&#x27;in progress&#x27;</span> 
-  <span class="hljs-keyword">WHERE</span> <span class="hljs-keyword">id</span> = xxx;
+  <span class="hljs-keyword">SET</span> status <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;in progress&#x27;</span> 
+  <span class="hljs-keyword">WHERE</span> id <span class="hljs-operator">=</span> xxx;
 <span class="hljs-keyword">COMMIT</span>;</code></pre>
 <p>Как только SQL сервер получает запрос на выборку <code>FOR UPDATE</code>, он никому другому больше не отдаст эту запись, пока ты не закроешь транзакцию.</p>
 <p>Кстати, организовывать очередь на SQL нужно аккуратно. Природа ее нагрузки такова, что очередь — небольшая, а SQL — уже задыхается. Не для очередей его взращивали. </p>
