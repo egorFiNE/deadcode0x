@@ -11,7 +11,7 @@ const datesFilename = path.join(__dirname, 'source', 'dates.json');
 
 marked.setOptions({
   renderer: new marked.Renderer(),
-  highlight: (code, language) => highlight(language, code).value,
+  highlight: (code, language) => highlight(code, { language }).value,
   pedantic: false,
   gfm: true,
   breaks: false,
