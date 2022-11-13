@@ -1,6 +1,6 @@
 'use strict';
 
-const marked = require('marked');
+const { marked } = require('marked');
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
