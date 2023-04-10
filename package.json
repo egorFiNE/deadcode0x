@@ -7,7 +7,7 @@
     "url": "git+https://github.com/egorFiNE/deadcode0x.git"
   },
   "dependencies": {
-    "aws-sdk": "^2.805.0",
+    "aws-sdk": "^2.1354.0",
     "ejs": "^3.1.2",
     "highlight.js": "^11.2.0",
     "marked": "^4.2.2",
