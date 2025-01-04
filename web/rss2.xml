@@ -903,7 +903,7 @@ users.<span class="hljs-title function_">forEach</span>(<span class="hljs-functi
   users[id] = user;
 }
 
-fs.<span class="hljs-title function_">writeFileSync</span>(<span class="hljs-string">&#x27;users.json&#x27;</span>, <span class="hljs-variable constant_">JSON</span>.<span class="hljs-title function_">stringify</span>(users));
+fs.<span class="hljs-title function_">writeFileSync</span>(<span class="hljs-string">&#x27;users.json&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(users));
 
 <span class="hljs-comment">// Стало, например:</span>
 
@@ -1197,7 +1197,7 @@ fflush(LOG_FILE);
 }
 </code></pre>
 <p>Можешь с утра выставить переменную окружения <code>PASSWORD_SKIP</code> в нужное значение и приступить к работе.</p>
-<pre class="code-padding"><code class="hljs code-padding language-bash"><span class="hljs-built_in">echo</span> -n  <span class="hljs-string">&quot;2019-01-21&quot;</span><span class="hljs-string">&quot;localhost&quot;</span><span class="hljs-string">&quot;sirko&quot;</span> | md5sum -
+<pre class="code-padding"><code class="hljs code-padding language-bash"><span class="hljs-built_in">echo</span> -n  <span class="hljs-string">&quot;2019-01-21&quot;</span><span class="hljs-string">&quot;localhost&quot;</span><span class="hljs-string">&quot;sirko&quot;</span> | <span class="hljs-built_in">md5sum</span> -
 </code></pre>
 <p>В продакшн такая переменная никогда не попадет, а если и попадет, то никогда не примет нужное значение.</p>
 <p>Важный момент #0: нельзя просто проверять <code>if (env.PASSWORD_SKIP)</code>, потому что так ты проверяешь просто наличие переменной окружения. Вероятность того, что она появится в продакшне — мизерная, но не нулевая. Вероятность, что она совпадет с контрольной суммой от дня и имени базы — ноль.</p>
